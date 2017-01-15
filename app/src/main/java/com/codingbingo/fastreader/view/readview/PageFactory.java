@@ -170,7 +170,12 @@ public class PageFactory {
      *
      * @param canvas
      */
-    public synchronized void drawPage(Canvas canvas) {
+    public synchronized void onDraw(Canvas canvas) {
 
+    }
+
+    //读取一页的内容
+    public void readPage(){
+        
     }
 }
