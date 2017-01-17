@@ -1,7 +1,12 @@
 package com.codingbingo.fastreader.view.readview;
 
+import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
+import com.codingbingo.fastreader.FRApplication;
+import com.codingbingo.fastreader.model.Book;
+import com.codingbingo.fastreader.model.BookDao;
 import com.codingbingo.fastreader.model.Chapter;
 import com.codingbingo.fastreader.model.ChapterDao;
 import com.codingbingo.fastreader.model.DaoSession;
@@ -46,6 +51,9 @@ public class PageFactory {
     private long mByteBufferLength;
     //当前页面开始的位置
     private int mCurrentPageStartPosition;
+
+    //阅读背景
+    private Bitmap bgBitmap;
     /**
      * 文件内存映射，高效读写
      */
@@ -58,25 +66,24 @@ public class PageFactory {
     //时间显示
     private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
 
-    private DaoSession daoSession;
+    private BookDao mBookDao;
+    private ChapterDao mChapterDao;
+
+    public PageFactory(Context context) {
+        DaoSession daoSession = ((FRApplication) context.getApplicationContext()).getDaoSession();
+
+        mBookDao = daoSession.getBookDao();
+        mChapterDao = daoSession.getChapterDao();
+    }
 
     public File getBookFileById(int bookId, int chapter) {
         File file = null;
         return file;
     }
 
-    public void openBook(int bookId, int chapter, int currentPosition) {
-        openBook(getBookFileById(bookId, chapter).getPath(), chapter, currentPosition);
-    }
+    public void openBook(long bookId, int chapter, int currentPosition) {
+        mBookDao.queryBuilder().where()
 
-    /**
-     * 打开书籍
-     *
-     * @param bookPath        书籍的位置
-     * @param chapter         章节
-     * @param currentPosition 开始位置
-     */
-    public void openBook(String bookPath, int chapter, int currentPosition) {
         mCurrentChapter = chapter;
         if (chapterList != null) {
             mChapterSize = chapterList.size();
@@ -99,6 +106,31 @@ public class PageFactory {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 打开书籍
+     *
+     * @param bookPath        书籍的位置
+     * @param chapter         章节
+     * @param currentPosition 开始位置
+     */
+    public void openBook(String bookPath, int chapter, int currentPosition) {
+        File file = new File(bookPath);
+        if (file.exists() == false){
+            //文件不存在
+            return;
+        }
+
+        Book book = new Book();
+        book.setBookName(file.getName());
+        book.setBookPath(bookPath);
+        book.setDescription("");
+        book.setBookImagePath("");
+
+        long id = mBookDao.insert(book);
+
+        openBook(id, chapter, currentPosition);
     }
 
     /**
@@ -149,11 +181,11 @@ public class PageFactory {
      * @return
      */
     private byte[] readParagraphForward(int curEndPos) {
-        byte b;
+        byte b0;
         int i = curEndPos;
         while (i < mByteBufferLength) {
-            b = mMappedByteBuffer.get(i++);
-            if (b == 0x0a) {
+            b0 = mMappedByteBuffer.get(i++);
+            if (b0 == 0x0a) {
                 break;
             }
         }
@@ -166,12 +198,36 @@ public class PageFactory {
     }
 
     /**
+     * 读取上一段落
+     *
+     * @param curBeginPos 当前页起始位置指针
+     * @return
+     */
+    private byte[] readParagraphBack(int curBeginPos) {
+        byte b0;
+        int i = curBeginPos - 1;
+        while (i > 0) {
+            b0 = mMappedByteBuffer.get(i);
+            if (b0 == 0x0a && i != curBeginPos - 1) {
+                i++;
+                break;
+            }
+            i--;
+        }
+        int nParaSize = curBeginPos - i;
+        byte[] buf = new byte[nParaSize];
+        for (int j = 0; j < nParaSize; j++) {
+            buf[j] = mMappedByteBuffer.get(i + j);
+        }
+        return buf;
+    }
+
+    /**
      * 绘制阅读页面
      *
      * @param canvas
      */
     public synchronized void onDraw(Canvas canvas) {
-
     }
 
     //读取一页的内容
