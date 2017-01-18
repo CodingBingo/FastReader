@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import com.codingbingo.fastreader.R;
 import com.codingbingo.fastreader.base.BaseActivity;
 import com.codingbingo.fastreader.model.LocalFile;
+import com.codingbingo.fastreader.view.readview.PageFactory;
 
 /**
  * Author: bingo
@@ -16,6 +17,8 @@ import com.codingbingo.fastreader.model.LocalFile;
 
 public class ReadingActivity extends BaseActivity {
 
+    private PageFactory pageFactory;
+
     private LocalFile mLocalFile;
 
     @Override
@@ -23,8 +26,13 @@ public class ReadingActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
-        if (intent != null && intent.hasExtra("file")) {
-            mLocalFile = (LocalFile) intent.getSerializableExtra("file");
+        if (intent.hasExtra("file") == false) {
+            finish();
+            return;
         }
+        mLocalFile = (LocalFile) intent.getSerializableExtra("file");
+
+        pageFactory = new PageFactory(getApplicationContext());
+        pageFactory.openBook(mLocalFile.getFilePath());
     }
 }

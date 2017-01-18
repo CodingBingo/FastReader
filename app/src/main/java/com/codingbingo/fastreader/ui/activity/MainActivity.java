@@ -21,6 +21,7 @@ import com.codingbingo.fastreader.ui.adapter.BookListAdapter;
 import com.codingbingo.fastreader.base.BaseActivity;
 import com.codingbingo.fastreader.model.Book;
 import com.codingbingo.fastreader.utils.CommonUtils;
+import com.codingbingo.fastreader.utils.ScreenUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,15 +92,15 @@ public class MainActivity extends BaseActivity implements
         bookListView.setAdapter(bookListAdapter);
 
         float bookListViewHeight = getResources().getDisplayMetrics().heightPixels
-                - CommonUtils.getTitleBarHeight(this)
-                - CommonUtils.getStatusBarHeight(this);
+                - ScreenUtils.getTitleBarHeight(this)
+                - ScreenUtils.getStatusBarHeight(this);
         bookListView.setMinimumHeight((int) bookListViewHeight);
         //保证展示图书列表顶部区域
         bookIndexScrollview.smoothScrollTo(0, 0);
 
         //获取正常情况下，顶部区域的高度
-        normalTopPanelHeight = CommonUtils.dp2px(this, 200);
-        totalChangeAlphaArea = normalTopPanelHeight - CommonUtils.getTitleBarHeight(this);
+        normalTopPanelHeight = ScreenUtils.dp2px(this, 200);
+        totalChangeAlphaArea = normalTopPanelHeight - ScreenUtils.getTitleBarHeight(this);
 
         initViewListener();
     }

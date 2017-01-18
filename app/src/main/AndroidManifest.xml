@@ -17,16 +17,16 @@
         android:theme="@style/AppTheme"
         android:name=".FRApplication">
         <activity android:name=".ui.activity.MainActivity">
-
-        </activity>
-
-        <activity android:name=".ui.activity.LocalFileListActivity"/>
-        <activity android:name=".ui.activity.ReadingActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity android:name=".ui.activity.LocalFileListActivity"/>
+        <activity android:name=".ui.activity.ReadingActivity">
+
         </activity>
     </application>
 

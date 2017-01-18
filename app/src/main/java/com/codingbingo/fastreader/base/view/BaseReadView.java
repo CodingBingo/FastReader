@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.view.View;
 
+import com.codingbingo.fastreader.view.readview.PageFactory;
+
 /**
  * Created by bingo on 2017/1/4.
  */
@@ -37,7 +39,7 @@ public abstract class BaseReadView extends View {
         mNextPageCanvas = new Canvas(mNextPageBitmap);
 
 
-        pageFactory = new PageFactory();
+        pageFactory = new PageFactory(context);
 
     }
 

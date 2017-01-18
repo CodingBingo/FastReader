@@ -11,6 +11,7 @@ import com.codingbingo.fastreader.model.Chapter;
 import com.codingbingo.fastreader.model.ChapterDao;
 import com.codingbingo.fastreader.model.DaoSession;
 import com.codingbingo.fastreader.utils.FileUtils;
+import com.codingbingo.fastreader.utils.ThreadPool;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,41 +59,51 @@ public class PageFactory {
      * 文件内存映射，高效读写
      */
     private MappedByteBuffer mMappedByteBuffer;
-    //编码方式
-    private String charSet = "UTF-8";
     //书籍的bookId
     private int bookId;
     private List<Chapter> chapterList;
     //时间显示
     private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
 
+    //线程池
+    private ThreadPool threadPool;
+
+    //书籍对象
+    private Book book;
+
     private BookDao mBookDao;
     private ChapterDao mChapterDao;
+
+    private BookStatusChangedListener mBookStatusChangedListener;
 
     public PageFactory(Context context) {
         DaoSession daoSession = ((FRApplication) context.getApplicationContext()).getDaoSession();
 
         mBookDao = daoSession.getBookDao();
         mChapterDao = daoSession.getChapterDao();
+        threadPool = ThreadPool.getInstance();
+
     }
 
-    public File getBookFileById(int bookId, int chapter) {
-        File file = null;
-        return file;
+    public void setmBookStatusChangedListener(BookStatusChangedListener mBookStatusChangedListener) {
+        this.mBookStatusChangedListener = mBookStatusChangedListener;
     }
 
     public void openBook(long bookId, int chapter, int currentPosition) {
-        mBookDao.queryBuilder().where()
+        List<Book> bookList = mBookDao.queryBuilder().where(BookDao.Properties.Id.eq(bookId)).list();
+        if (bookList == null || bookList.isEmpty()) {
+            //书籍为空
+            return;
+        }
+        book = bookList.get(0);
 
         mCurrentChapter = chapter;
         if (chapterList != null) {
             mChapterSize = chapterList.size();
         }
         mCurrentPageStartPosition = currentPosition;
-        //获取文件编码
-        charSet = FileUtils.getJavaEncode(bookPath);
         try {
-            File file = new File(bookPath);
+            File file = new File(book.getBookPath());
             long length = file.length();
             if (length > 10) {
                 mByteBufferLength = length;
@@ -103,43 +114,66 @@ public class PageFactory {
 
                 mCurrentPageStartPosition = currentPosition;
             }
+
+            processChapters();
+
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private class OpenBookTask implements Runnable {
+        private String bookPath;
+
+        public OpenBookTask(String bookPath) {
+            this.bookPath = bookPath;
+        }
+
+        @Override
+        public void run() {
+            int statusCode = BookStatusChangedListener.STATUS_OK;
+            Book book = new Book();
+
+            File file = new File(bookPath);
+            if (file.exists() == true) {
+                book.setBookName(file.getName());
+                book.setBookPath(bookPath);
+                String charSet = FileUtils.getJavaEncode(bookPath);
+                book.setCharSet(charSet);
+                book.setDescription("");
+                book.setBookImagePath("");
+                try {
+                    long id = mBookDao.insert(book);
+                    book.setId(id);
+                    //开始读取书籍信息
+                    openBook(id, 0, 0);
+                }catch (Exception e){
+                    //插入数据库的时候可能会失败
+                    statusCode = BookStatusChangedListener.STATUS_DATABASE_ERROR;
+                }
+            } else {
+                statusCode = BookStatusChangedListener.STATUS_FILE_NOT_FOUND_ERROR;
+            }
+            if (mBookStatusChangedListener != null) {
+                mBookStatusChangedListener.onBookLoaded(statusCode, book);
+            }
         }
     }
 
     /**
      * 打开书籍
      *
-     * @param bookPath        书籍的位置
-     * @param chapter         章节
-     * @param currentPosition 开始位置
+     * @param bookPath 书籍的位置
      */
-    public void openBook(String bookPath, int chapter, int currentPosition) {
-        File file = new File(bookPath);
-        if (file.exists() == false){
-            //文件不存在
-            return;
-        }
-
-        Book book = new Book();
-        book.setBookName(file.getName());
-        book.setBookPath(bookPath);
-        book.setDescription("");
-        book.setBookImagePath("");
-
-        long id = mBookDao.insert(book);
-
-        openBook(id, chapter, currentPosition);
+    public void openBook(String bookPath) {
+        threadPool.submitTask(new OpenBookTask(bookPath));
     }
 
     /**
      * 读书籍目录，断章
      * 这个需要放到一个线程里面运行
-     * @return
-     * @throws UnsupportedEncodingException
      */
-    public List<Chapter> processChapters() throws UnsupportedEncodingException {
+    public void processChapters() {
         if (chapterList == null) {
             chapterList = new ArrayList<>();
         }
@@ -147,31 +181,39 @@ public class PageFactory {
         int lastPosition = 0;
 
         Pattern pattern = Pattern.compile("第.{1,7}章.*\r\n");
-        ChapterDao chapterDao = daoSession.getChapterDao();
 
         while (currentPosition < mByteBufferLength) {
             byte[] bytes = readParagraphForward(currentPosition);
-            String paragraph = new String(bytes, charSet);
 
-            Matcher matcher = pattern.matcher(paragraph);
-            if (matcher.find()) {
-                //修正章节错
-                if (currentPosition - lastPosition > 200 && bytes.length < 50) {
+            try {
+                String paragraph = new String(bytes, book.getCharSet());
 
-                    Chapter chapter = new Chapter();
-                    chapter.setTitle(matcher.group());
-                    chapter.setPosition(currentPosition);
-                    chapter.setIsRead(false);
-                    chapter.setBookId(bookId);
-                    //插入数据库
-                    chapterDao.insert(chapter);
+                Matcher matcher = pattern.matcher(paragraph);
+                if (matcher.find()) {
+                    //修正章节错
+                    if (currentPosition - lastPosition > 200 && bytes.length < 50) {
+                        if (book != null) {
+                            Chapter chapter = new Chapter();
+                            chapter.setId(null);
+                            chapter.setTitle(matcher.group());
+                            chapter.setPosition(currentPosition);
+                            chapter.setIsRead(false);
+                            chapter.setBook(book);
+                            //插入数据库
+                            mChapterDao.insert(chapter);
+                            chapterList.add(chapter);
 
-                    chapterList.add(chapter);
+                            lastPosition = currentPosition;
+                        }
+                    }
                 }
-            }
-        }
 
-        return chapterList;
+            } catch (UnsupportedEncodingException e) {
+                //不支持编码
+            }
+
+            currentPosition += bytes.length;
+        }
     }
 
     /**
@@ -231,7 +273,23 @@ public class PageFactory {
     }
 
     //读取一页的内容
-    public void readPage(){
+    public void readPage() {
 
+    }
+
+
+    public interface BookStatusChangedListener {
+
+        int STATUS_OK = 1;
+        int STATUS_DATABASE_ERROR = 2;
+        int STATUS_FILE_NOT_FOUND_ERROR = 3;
+
+        /**
+         * 加载book完毕，完成编码方式、断章等等
+         *
+         * @param status
+         * @param book
+         */
+        void onBookLoaded(int status, Book book);
     }
 }
