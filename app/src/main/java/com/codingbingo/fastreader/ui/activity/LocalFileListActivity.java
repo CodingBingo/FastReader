@@ -8,6 +8,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.codingbingo.fastreader.Constants;
 import com.codingbingo.fastreader.R;
 import com.codingbingo.fastreader.base.BaseActivity;
 import com.codingbingo.fastreader.model.LocalFile;
@@ -81,7 +82,8 @@ public class LocalFileListActivity extends BaseActivity implements View.OnClickL
         LocalFile localFile = localFileList.get(position);
 
         Intent intent = new Intent(this, ReadingActivity.class);
-        intent.putExtra("file", localFile);
+        intent.putExtra("type", Constants.TYPE_FROM_MAIN_ACTIVITY);
+        intent.putExtra("bookPath", localFile.getFilePath());
         startActivity(intent);
     }
 }

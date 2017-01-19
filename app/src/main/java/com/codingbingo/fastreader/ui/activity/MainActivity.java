@@ -16,7 +16,10 @@ import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.codingbingo.fastreader.Constants;
+import com.codingbingo.fastreader.FRApplication;
 import com.codingbingo.fastreader.R;
+import com.codingbingo.fastreader.model.BookDao;
 import com.codingbingo.fastreader.ui.adapter.BookListAdapter;
 import com.codingbingo.fastreader.base.BaseActivity;
 import com.codingbingo.fastreader.model.Book;
@@ -27,7 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends BaseActivity implements
-        NestedScrollView.OnScrollChangeListener, View.OnClickListener {
+        NestedScrollView.OnScrollChangeListener, View.OnClickListener,
+        BookListAdapter.OnBookListItemClickListener{
 
     private int normalTopPanelHeight = 0;
     private int totalChangeAlphaArea = 0;
@@ -52,6 +56,8 @@ public class MainActivity extends BaseActivity implements
 
     private List<Book> bookList;
 
+    private BookDao mBookDao;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,7 +68,9 @@ public class MainActivity extends BaseActivity implements
     }
 
     private void init() {
-        bookList = new ArrayList<>();
+        mBookDao = ((FRApplication) getApplication()).getDaoSession().getBookDao();
+
+        bookList = mBookDao.loadAll();
     }
 
     private void initView() {
@@ -140,6 +148,18 @@ public class MainActivity extends BaseActivity implements
             titleText.setTextColor(getResources().getColor(R.color.black));
 
             titleBarColor = 2;
+        }
+    }
+
+    @Override
+    public void onBookItemClick(Book book, int position) {
+        if (book == null){
+            //添加书籍
+        } else {
+            Intent intent = new Intent(MainActivity.this, ReadingActivity.class);
+            intent.putExtra("type", Constants.TYPE_FROM_MAIN_ACTIVITY);
+            intent.putExtra("bookId", book.getId());
+            startActivity(intent);
         }
     }
 

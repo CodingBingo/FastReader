@@ -15,13 +15,16 @@
     <TextView
         android:id="@+id/novel_tag"
         android:layout_width="40dp"
-        android:layout_height="10dp"
+        android:layout_height="15dp"
         android:layout_alignBottom="@id/novel_image"
-        android:layout_alignLeft="@id/novel_image"
-        android:layout_marginLeft="5dp"
-        android:text="@string/book_new"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="10dp"
+        android:layout_marginRight="10dp"
+        android:text="TXT"
+        android:gravity="center"
         android:textColor="@color/white"
-        android:textSize="10dp" />
+        android:textSize="12dp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/novel_title"
