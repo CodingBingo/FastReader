@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
+import com.codingbingo.fastreader.Constants;
 import com.codingbingo.fastreader.FRApplication;
 import com.codingbingo.fastreader.dao.Book;
 import com.codingbingo.fastreader.dao.BookDao;
@@ -115,8 +116,27 @@ public class PageFactory {
                 mCurrentPageStartPosition = currentPosition;
             }
 
-            processChapters();
+            switch (book.getProcessStatus()){
+                case Constants.BOOK_NORMAL:
+                    book.setProcessStatus(Constants.BOOK_PROCESSING);//改为正在处理中
+                    mBookDao.update(book);
 
+                    processChapters();
+                    break;
+                case Constants.BOOK_PROCESSING:
+                    List<Chapter> chapterList = mChapterDao.queryBuilder().where(ChapterDao.Properties.BookId.eq(book.getId())).list();
+                    mChapterDao.deleteInTx(chapterList);
+
+                    book.setProcessStatus(Constants.BOOK_PROCESSING);//改为正在处理中
+                    mBookDao.update(book);
+
+                    processChapters();
+                    break;
+                case Constants.BOOK_PROCESSED:
+                    //可以开始处理书籍数据了
+
+                    break;
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -214,8 +234,6 @@ public class PageFactory {
 
             currentPosition += bytes.length;
         }
-
-        //完成章节处理,给book打标
     }
 
     /**
@@ -276,7 +294,7 @@ public class PageFactory {
 
     //读取一页的内容
     public void readPage() {
-
+        
     }
 
 

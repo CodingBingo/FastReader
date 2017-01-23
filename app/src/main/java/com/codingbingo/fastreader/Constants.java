@@ -12,4 +12,8 @@ public class Constants {
 
     public static final int TYPE_FROM_MAIN_ACTIVITY = 1;
     public static final int TYPE_FROM_LOCAL_FILE_ACTIVITY = 2;
+
+    public static final int BOOK_NORMAL = 0;
+    public static final int BOOK_PROCESSING = 1;
+    public static final int BOOK_PROCESSED = 2;
 }
