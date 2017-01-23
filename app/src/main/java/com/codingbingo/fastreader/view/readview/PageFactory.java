@@ -5,11 +5,11 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
 import com.codingbingo.fastreader.FRApplication;
-import com.codingbingo.fastreader.model.Book;
-import com.codingbingo.fastreader.model.BookDao;
-import com.codingbingo.fastreader.model.Chapter;
-import com.codingbingo.fastreader.model.ChapterDao;
-import com.codingbingo.fastreader.model.DaoSession;
+import com.codingbingo.fastreader.dao.Book;
+import com.codingbingo.fastreader.dao.BookDao;
+import com.codingbingo.fastreader.dao.Chapter;
+import com.codingbingo.fastreader.dao.ChapterDao;
+import com.codingbingo.fastreader.dao.DaoSession;
 import com.codingbingo.fastreader.utils.FileUtils;
 import com.codingbingo.fastreader.utils.ThreadPool;
 
@@ -214,6 +214,8 @@ public class PageFactory {
 
             currentPosition += bytes.length;
         }
+
+        //完成章节处理,给book打标
     }
 
     /**

@@ -82,7 +82,7 @@ public class LocalFileListActivity extends BaseActivity implements View.OnClickL
         LocalFile localFile = localFileList.get(position);
 
         Intent intent = new Intent(this, ReadingActivity.class);
-        intent.putExtra("type", Constants.TYPE_FROM_MAIN_ACTIVITY);
+        intent.putExtra("type", Constants.TYPE_FROM_LOCAL_FILE_ACTIVITY);
         intent.putExtra("bookPath", localFile.getFilePath());
         startActivity(intent);
     }

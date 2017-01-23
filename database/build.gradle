@@ -1,0 +1,10 @@
+apply plugin: 'java'
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile files('libs/greendao-generator-3.2.0.jar')
+    compile files('libs/freemarker-2.3.25-incubating.jar')
+}
+
+sourceCompatibility = "1.7"
+targetCompatibility = "1.7"

@@ -4,7 +4,7 @@ import android.support.v4.app.Fragment;
 
 import com.avos.avoscloud.AVAnalytics;
 import com.codingbingo.fastreader.FRApplication;
-import com.codingbingo.fastreader.model.DaoSession;
+import com.codingbingo.fastreader.dao.DaoSession;
 
 /**
  * Created by bingo on 2016/12/24.

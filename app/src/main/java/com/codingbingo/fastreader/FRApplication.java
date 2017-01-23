@@ -5,8 +5,8 @@ import android.app.Service;
 
 import com.avos.avoscloud.AVAnalytics;
 import com.avos.avoscloud.AVOSCloud;
-import com.codingbingo.fastreader.model.DaoMaster;
-import com.codingbingo.fastreader.model.DaoSession;
+import com.codingbingo.fastreader.dao.DaoMaster;
+import com.codingbingo.fastreader.dao.DaoSession;
 import com.facebook.stetho.Stetho;
 
 import org.greenrobot.greendao.database.Database;

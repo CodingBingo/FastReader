@@ -4,7 +4,7 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.avos.avoscloud.AVAnalytics;
 import com.codingbingo.fastreader.FRApplication;
-import com.codingbingo.fastreader.model.DaoSession;
+import com.codingbingo.fastreader.dao.DaoSession;
 
 /**
  * Created by bingo on 2016/12/23.

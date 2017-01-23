@@ -9,7 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.codingbingo.fastreader.R;
-import com.codingbingo.fastreader.model.Book;
+import com.codingbingo.fastreader.dao.Book;
 import com.codingbingo.fastreader.utils.StringUtils;
 
 import java.util.List;
