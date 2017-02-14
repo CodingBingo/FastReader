@@ -39,7 +39,6 @@ public class ReadingActivity extends BaseActivity {
             case Constants.TYPE_FROM_LOCAL_FILE_ACTIVITY:
                 pageFactory.openBook(intent.getStringExtra("bookPath"));
                 break;
-
         }
     }
 }

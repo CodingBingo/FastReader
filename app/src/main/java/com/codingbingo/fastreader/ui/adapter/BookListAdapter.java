@@ -77,7 +77,11 @@ public class BookListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     bookTag = "";
                 } else {
                     bookName = s[0];
-                    bookTag = s[1];
+                    if (s.length - 1 >= 0) {
+                        bookTag = s[s.length - 1];
+                    }else{
+                        bookTag = "";
+                    }
                 }
             } else {
                 bookName = fileName;

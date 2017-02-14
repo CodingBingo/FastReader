@@ -153,6 +153,9 @@ public class MainActivity extends BaseActivity implements
     public void onBookItemClick(Book book, int position) {
         if (book == null){
             //添加书籍
+
+            Intent intent = new Intent(MainActivity.this, LocalFileListActivity.class);
+            startActivity(intent);
         } else {
             Intent intent = new Intent(MainActivity.this, ReadingActivity.class);
             intent.putExtra("type", Constants.TYPE_FROM_MAIN_ACTIVITY);
