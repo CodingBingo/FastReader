@@ -10,11 +10,15 @@ import java.util.concurrent.Executors;
  */
 
 public class ThreadPool {
-    private static ThreadPool threadPool;
+    private volatile static ThreadPool threadPool;
 
     public static ThreadPool getInstance() {
         if (threadPool == null) {
-            threadPool = new ThreadPool();
+            synchronized (ThreadPool.class) {
+                if (threadPool == null) {
+                    threadPool = new ThreadPool();
+                }
+            }
         }
         return threadPool;
     }

@@ -7,6 +7,7 @@ import com.avos.avoscloud.AVAnalytics;
 import com.avos.avoscloud.AVOSCloud;
 import com.codingbingo.fastreader.dao.DaoMaster;
 import com.codingbingo.fastreader.dao.DaoSession;
+import com.codingbingo.fastreader.utils.SharedPreferenceUtils;
 import com.facebook.stetho.Stetho;
 
 import org.greenrobot.greendao.database.Database;
@@ -31,8 +32,13 @@ public class FRApplication extends Application {
 
         initCloudService();
         initDatabase();
+        init();
 
         Stetho.initializeWithDefaults(this);
+    }
+
+    private void init() {
+        SharedPreferenceUtils.init(this, "FastReader");
     }
 
     /**
@@ -43,6 +49,8 @@ public class FRApplication extends Application {
         // 初始化参数依次为 this, AppId, AppKey
         AVOSCloud.initialize(this, Constants.APP_ID, Constants.APP_KEY);
 //        AVAnalytics.enableCrashReport(this, true);
+        //调试过程中，出现debug的log
+        AVOSCloud.setDebugLogEnabled(true);
     }
 
     /**
