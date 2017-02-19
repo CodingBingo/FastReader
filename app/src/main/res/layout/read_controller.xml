@@ -117,7 +117,7 @@
                         android:layout_width="26dp"
                         android:layout_height="26dp"
                         android:layout_centerHorizontal="true"
-                        android:src="@drawable/fontType" />
+                        android:src="@drawable/font_type" />
 
                     <TextView
                         android:layout_width="26dp"
