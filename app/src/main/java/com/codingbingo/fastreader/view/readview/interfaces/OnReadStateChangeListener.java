@@ -16,4 +16,14 @@ public interface OnReadStateChangeListener {
      * @param book
      */
     void onBookLoaded(BookStatus status, Book book);
+
+    void onChapterChanged(Book book, int chapter);
+
+    void onPageChanged(Book book, int chapter, int page);
+
+    void onLoadChapterFailure(Book book, int chapter);
+
+    void onCenterClick();
+
+    void onFlip();
 }

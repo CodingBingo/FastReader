@@ -682,6 +682,21 @@ public class PageFactory {
         this.listener = listener;
     }
 
+    void onChapterChanged(int chapter) {
+        if (listener != null)
+            listener.onChapterChanged(chapter);
+    }
+
+    void onPageChanged(int chapter, int page) {
+        if (listener != null)
+            listener.onPageChanged(book, chapter, page);
+    }
+
+    void onLoadChapterFailure(int chapter) {
+        if (listener != null)
+            listener.onLoadChapterFailure(book, chapter);
+    }
+
 //    public void convertBetteryBitmap() {
 //        batteryView = (ProgressBar) LayoutInflater.from(mContext).inflate(R.layout.layout_battery_progress, null);
 //        batteryView.setProgressDrawable(ContextCompat.getDrawable(mContext,
