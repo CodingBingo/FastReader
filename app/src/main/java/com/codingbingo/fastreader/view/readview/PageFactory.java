@@ -86,7 +86,7 @@ public class PageFactory {
     /**
      * 页首页尾的位置
      */
-    private int curEndPos = 0, curBeginPos = 0, tempBeginPos;
+    private int curBeginPos = 0, tempBeginPos;
     private int currentChapter, tempChapter;
     private Vector<String> mLines = new Vector<>();
 
@@ -195,7 +195,7 @@ public class PageFactory {
                     long id = mBookDao.insert(book);
                     book.setId(id);
                     //开始读取书籍信息
-                    openBook(id, 0, 0);
+                    openBook(0, 0);
                 }catch (Exception e){
                     //插入数据库的时候可能会失败
                     statusCode = BookStatus.STATUS_DATABASE_ERROR;
@@ -264,7 +264,7 @@ public class PageFactory {
      * @param position 阅读位置
      * @return 0：文件不存在或打开失败  1：打开成功
      */
-    public int openBook(int chapter, int[] position) {
+    public int openBook(int chapter, int position) {
         this.currentChapter = chapter;
         this.chapterSize = chaptersList.size();
         if (currentChapter > chapterSize)
@@ -279,8 +279,7 @@ public class PageFactory {
                 mbBuff = new RandomAccessFile(file, "r")
                         .getChannel()
                         .map(FileChannel.MapMode.READ_ONLY, 0, length);
-                curBeginPos = position[0];
-                curEndPos = position[1];
+                curBeginPos = position;
                 onChapterChanged(chapter);
                 mLines.clear();
                 return 1;
@@ -337,7 +336,8 @@ public class PageFactory {
             canvas.drawText(mTime, mWidth - marginWidth - timeLen, mHeight - marginHeight, mTitlePaint);
 
             // 保存阅读进度
-            SettingManager.getInstance().saveReadProgress(bookId, currentChapter, curBeginPos, curEndPos);
+            book.setCurrentPosition(currentChapter);
+            book.setCurrentChapter(curBeginPos);
         }
     }
 

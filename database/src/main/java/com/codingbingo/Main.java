@@ -20,6 +20,9 @@ public class Main {
         book.addStringProperty("writer");
         book.addStringProperty("charSet");
         book.addStringProperty("bookPath");
+
+        book.addIntProperty("currentChapter");
+        book.addIntProperty("currentPosition");
         book.addIntProperty("processStatus").notNull();
 
         Entity chapter = schema.addEntity("Chapter");
@@ -32,7 +35,7 @@ public class Main {
         Property bookIdProperty = chapter.addLongProperty("bookId").notNull().getProperty();
         chapter.addToOne(book, bookIdProperty);
 
-        new DaoGenerator().generateAll(schema, "~/Git/FastReader/app/src/main/java");
+        new DaoGenerator().generateAll(schema, "/Users/bingo/Git/FastReader/app/src/main/java");
     }
 
 }

@@ -30,7 +30,9 @@ public class BookDao extends AbstractDao<Book, Long> {
         public final static Property Writer = new Property(5, String.class, "writer", false, "WRITER");
         public final static Property CharSet = new Property(6, String.class, "charSet", false, "CHAR_SET");
         public final static Property BookPath = new Property(7, String.class, "bookPath", false, "BOOK_PATH");
-        public final static Property ProcessStatus = new Property(8, int.class, "processStatus", false, "PROCESS_STATUS");
+        public final static Property CurrentChapter = new Property(8, Integer.class, "currentChapter", false, "CURRENT_CHAPTER");
+        public final static Property CurrentPosition = new Property(9, Integer.class, "currentPosition", false, "CURRENT_POSITION");
+        public final static Property ProcessStatus = new Property(10, int.class, "processStatus", false, "PROCESS_STATUS");
     }
 
 
@@ -54,7 +56,9 @@ public class BookDao extends AbstractDao<Book, Long> {
                 "\"WRITER\" TEXT," + // 5: writer
                 "\"CHAR_SET\" TEXT," + // 6: charSet
                 "\"BOOK_PATH\" TEXT," + // 7: bookPath
-                "\"PROCESS_STATUS\" INTEGER NOT NULL );"); // 8: processStatus
+                "\"CURRENT_CHAPTER\" INTEGER," + // 8: currentChapter
+                "\"CURRENT_POSITION\" INTEGER," + // 9: currentPosition
+                "\"PROCESS_STATUS\" INTEGER NOT NULL );"); // 10: processStatus
     }
 
     /** Drops the underlying database table. */
@@ -102,7 +106,17 @@ public class BookDao extends AbstractDao<Book, Long> {
         if (bookPath != null) {
             stmt.bindString(8, bookPath);
         }
-        stmt.bindLong(9, entity.getProcessStatus());
+ 
+        Integer currentChapter = entity.getCurrentChapter();
+        if (currentChapter != null) {
+            stmt.bindLong(9, currentChapter);
+        }
+ 
+        Integer currentPosition = entity.getCurrentPosition();
+        if (currentPosition != null) {
+            stmt.bindLong(10, currentPosition);
+        }
+        stmt.bindLong(11, entity.getProcessStatus());
     }
 
     @Override
@@ -144,7 +158,17 @@ public class BookDao extends AbstractDao<Book, Long> {
         if (bookPath != null) {
             stmt.bindString(8, bookPath);
         }
-        stmt.bindLong(9, entity.getProcessStatus());
+ 
+        Integer currentChapter = entity.getCurrentChapter();
+        if (currentChapter != null) {
+            stmt.bindLong(9, currentChapter);
+        }
+ 
+        Integer currentPosition = entity.getCurrentPosition();
+        if (currentPosition != null) {
+            stmt.bindLong(10, currentPosition);
+        }
+        stmt.bindLong(11, entity.getProcessStatus());
     }
 
     @Override
@@ -163,7 +187,9 @@ public class BookDao extends AbstractDao<Book, Long> {
             cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5), // writer
             cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6), // charSet
             cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7), // bookPath
-            cursor.getInt(offset + 8) // processStatus
+            cursor.isNull(offset + 8) ? null : cursor.getInt(offset + 8), // currentChapter
+            cursor.isNull(offset + 9) ? null : cursor.getInt(offset + 9), // currentPosition
+            cursor.getInt(offset + 10) // processStatus
         );
         return entity;
     }
@@ -178,7 +204,9 @@ public class BookDao extends AbstractDao<Book, Long> {
         entity.setWriter(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
         entity.setCharSet(cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6));
         entity.setBookPath(cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7));
-        entity.setProcessStatus(cursor.getInt(offset + 8));
+        entity.setCurrentChapter(cursor.isNull(offset + 8) ? null : cursor.getInt(offset + 8));
+        entity.setCurrentPosition(cursor.isNull(offset + 9) ? null : cursor.getInt(offset + 9));
+        entity.setProcessStatus(cursor.getInt(offset + 10));
      }
     
     @Override

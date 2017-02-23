@@ -21,6 +21,8 @@ public class Book {
     private String writer;
     private String charSet;
     private String bookPath;
+    private Integer currentChapter;
+    private Integer currentPosition;
     private int processStatus;
 
     @Generated
@@ -32,7 +34,7 @@ public class Book {
     }
 
     @Generated
-    public Book(Long id, String bookName, String bookImagePath, String description, String tags, String writer, String charSet, String bookPath, int processStatus) {
+    public Book(Long id, String bookName, String bookImagePath, String description, String tags, String writer, String charSet, String bookPath, Integer currentChapter, Integer currentPosition, int processStatus) {
         this.id = id;
         this.bookName = bookName;
         this.bookImagePath = bookImagePath;
@@ -41,6 +43,8 @@ public class Book {
         this.writer = writer;
         this.charSet = charSet;
         this.bookPath = bookPath;
+        this.currentChapter = currentChapter;
+        this.currentPosition = currentPosition;
         this.processStatus = processStatus;
     }
 
@@ -108,6 +112,22 @@ public class Book {
 
     public void setBookPath(String bookPath) {
         this.bookPath = bookPath;
+    }
+
+    public Integer getCurrentChapter() {
+        return currentChapter;
+    }
+
+    public void setCurrentChapter(Integer currentChapter) {
+        this.currentChapter = currentChapter;
+    }
+
+    public Integer getCurrentPosition() {
+        return currentPosition;
+    }
+
+    public void setCurrentPosition(Integer currentPosition) {
+        this.currentPosition = currentPosition;
     }
 
     public int getProcessStatus() {
