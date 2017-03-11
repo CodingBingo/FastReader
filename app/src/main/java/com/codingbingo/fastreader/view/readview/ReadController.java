@@ -29,6 +29,7 @@ public class ReadController extends FrameLayout implements View.OnTouchListener{
     private Animation bottomOutAnimation;
     private Animation bottomInAnimation;
 
+    private OnControllerStatusChangeListener onControllerStatusChangeListener;
     private boolean isShowing = false;
 
     public ReadController(Context context) {
@@ -62,7 +63,13 @@ public class ReadController extends FrameLayout implements View.OnTouchListener{
         }else{
             showController();
         }
+
+        //返回controller状态
+        if (onControllerStatusChangeListener != null){
+            onControllerStatusChangeListener.onControllerStatusChange(!isShowing);
+        }
         isShowing = !isShowing;
+
 
         return false;
     }
@@ -82,8 +89,6 @@ public class ReadController extends FrameLayout implements View.OnTouchListener{
         controllerTopBar = (RelativeLayout) findViewById(R.id.controllerTopBar);
         controllerBottomBar = (LinearLayout) findViewById(R.id.controllerBottomBar);
 
-        //开始进来之后就要隐藏控制栏
-        hideController();
     }
 
     private void hideController() {
@@ -94,5 +99,13 @@ public class ReadController extends FrameLayout implements View.OnTouchListener{
     private void showController() {
         controllerTopBar.startAnimation(topInAnimation);
         controllerBottomBar.startAnimation(bottomInAnimation);
+    }
+
+    public void setOnControllerStatusChangeListener(OnControllerStatusChangeListener onControllerStatusChangeListener) {
+        this.onControllerStatusChangeListener = onControllerStatusChangeListener;
+    }
+
+    public interface OnControllerStatusChangeListener{
+        void onControllerStatusChange(boolean isShowing);
     }
 }

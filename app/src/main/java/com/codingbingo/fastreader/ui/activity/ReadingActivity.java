@@ -9,6 +9,7 @@ import com.codingbingo.fastreader.Constants;
 import com.codingbingo.fastreader.R;
 import com.codingbingo.fastreader.base.BaseActivity;
 import com.codingbingo.fastreader.view.readview.PageFactory;
+import com.codingbingo.fastreader.view.readview.ReadController;
 
 /**
  * Author: bingo
@@ -16,18 +17,19 @@ import com.codingbingo.fastreader.view.readview.PageFactory;
  * By 2017/1/11.
  */
 
-public class ReadingActivity extends BaseActivity {
+public class ReadingActivity extends BaseActivity implements ReadController.OnControllerStatusChangeListener {
+
+    private ReadController readController;
 
     private PageFactory pageFactory;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        switchFullScreen(true);
-
         setContentView(R.layout.activity_reading);
 
         init();
+        initView();
     }
 
     private void init() {
@@ -39,7 +41,7 @@ public class ReadingActivity extends BaseActivity {
 
         pageFactory = new PageFactory(getApplicationContext());
 
-        switch (intent.getIntExtra("type", Constants.TYPE_FROM_MAIN_ACTIVITY)){
+        switch (intent.getIntExtra("type", Constants.TYPE_FROM_MAIN_ACTIVITY)) {
             case Constants.TYPE_FROM_MAIN_ACTIVITY:
                 //从主页面进来的，说明本地数据已经插入数据库了
                 pageFactory.openBook(intent.getLongExtra("bookId", 0));
@@ -50,7 +52,12 @@ public class ReadingActivity extends BaseActivity {
         }
     }
 
-    private void switchFullScreen(boolean isFullScreen){
+    private void initView() {
+        readController = (ReadController) findViewById(R.id.readController);
+        readController.setOnControllerStatusChangeListener(this);
+    }
+
+    private void switchFullScreen(boolean isFullScreen) {
         if (isFullScreen) {
             WindowManager.LayoutParams params = getWindow().getAttributes();
             params.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
@@ -61,7 +68,11 @@ public class ReadingActivity extends BaseActivity {
             params.flags &= (~WindowManager.LayoutParams.FLAG_FULLSCREEN);
             getWindow().setAttributes(params);
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-
         }
+    }
+
+    @Override
+    public void onControllerStatusChange(boolean isShowing) {
+        switchFullScreen(!isShowing);
     }
 }
