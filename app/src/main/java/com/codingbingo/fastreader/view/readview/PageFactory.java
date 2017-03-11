@@ -1,482 +1,235 @@
-/**
- * Copyright 2016 JustWayward Team
- * <p/>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p/>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.codingbingo.fastreader.view.readview;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.widget.ProgressBar;
+import android.util.Log;
 
-import com.avos.avoscloud.LogUtil;
+import com.codingbingo.fastreader.Constants;
+import com.codingbingo.fastreader.FRApplication;
 import com.codingbingo.fastreader.dao.Book;
 import com.codingbingo.fastreader.dao.BookDao;
 import com.codingbingo.fastreader.dao.Chapter;
 import com.codingbingo.fastreader.dao.ChapterDao;
-import com.codingbingo.fastreader.manager.SettingManager;
+import com.codingbingo.fastreader.dao.DaoSession;
 import com.codingbingo.fastreader.utils.FileUtils;
-import com.codingbingo.fastreader.utils.ScreenUtils;
+import com.codingbingo.fastreader.utils.StringUtils;
 import com.codingbingo.fastreader.utils.ThreadPool;
-import com.codingbingo.fastreader.view.readview.interfaces.OnReadStateChangeListener;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Author: bingo
+ * Email: codingbingo@gmail.com
+ * By 2017/3/11.
+ */
+
 public class PageFactory {
+
+    public static final String TAG = "PageFactory";
+
     private Context mContext;
-    /**
-     * 屏幕宽高
-     */
-    private int mHeight, mWidth;
-    /**
-     * 文字区域宽高
-     */
-    private int mVisibleHeight, mVisibleWidth;
-    /**
-     * 间距
-     */
-    private int marginHeight, marginWidth;
-    /**
-     * 字体大小
-     */
-    private int mFontSize, mNumFontSize;
-    /**
-     * 每页行数
-     */
-    private int mPageLineCount;
-    /**
-     * 行间距
-     **/
-    private int mLineSpace;
-    /**
-     * 字节长度
-     */
-    private int mbBufferLen;
-    /**
-     * MappedByteBuffer：高效的文件内存映射
-     */
-    private MappedByteBuffer mbBuff;
-    /**
-     * 页首页尾的位置
-     */
-    private int curBeginPos = 0, tempBeginPos;
-    private int currentChapter, tempChapter;
-    private Vector<String> mLines = new Vector<>();
 
-    private Paint mPaint;
-    private Paint mTitlePaint;
-    private Bitmap mBookPageBg;
-
-    private DecimalFormat decimalFormat = new DecimalFormat("#0.00");
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
-    private int timeLen = 0, percentLen = 0;
-    private String time;
-    private int battery = 40;
-    private Rect rectF;
-    private ProgressBar batteryView;
-    private Bitmap batteryBitmap;
-
-    private String bookId;
-    private List<Chapter> chaptersList;
-    private int chapterSize = 0;
-    private int currentPage = 1;
-
-    private OnReadStateChangeListener listener;
-
-    private String charset = "UTF-8";
-
-    private Book book;
-    private List<Chapter> chapterList;
-
+    //数据库DAO
+    private DaoSession mDaoSession;
     private BookDao mBookDao;
     private ChapterDao mChapterDao;
 
-    private ThreadPool threadPool;
+    private Book mBook;
+    private List<Chapter> mChapterList;
+    private long mByteBufferLength;
+    //当前的章节以及位置
+    private int currentChapter = 1;
+    private int currentPosition = 0;
 
-    public PageFactory(Context context, String bookId, List<Chapter> chaptersList) {
-        this(context, ScreenUtils.getScreenWidth(context), ScreenUtils.getScreenHeight(context),
-                //SettingManager.getInstance().getReadFontSize(bookId),
-                SettingManager.getInstance().getReadFontSize(),
-                bookId, chaptersList);
+    private MappedByteBuffer mMappedByteBuffer;
+
+    public PageFactory(Context mContext) {
+        this.mContext = mContext;
+
+        mDaoSession = ((FRApplication)mContext.getApplicationContext()).getDaoSession();
+        mBookDao = mDaoSession.getBookDao();
+        mChapterDao = mDaoSession.getChapterDao();
     }
 
-    public PageFactory(Context context, int width, int height, int fontSize, String bookId,
-                       List<Chapter> chaptersList) {
-        mContext = context;
-        mWidth = width;
-        mHeight = height;
-        mFontSize = fontSize;
-        mLineSpace = mFontSize / 5 * 2;
-        mNumFontSize = ScreenUtils.dp2px(context, 16);
-        marginWidth = ScreenUtils.dp2px(context, 15);
-        marginHeight = ScreenUtils.dp2px(context, 15);
-        mVisibleHeight = mHeight - marginHeight * 2 - mNumFontSize * 2 - mLineSpace * 2;
-        mVisibleWidth = mWidth - marginWidth * 2;
-        mPageLineCount = mVisibleHeight / (mFontSize + mLineSpace);
-        rectF = new Rect(0, 0, mWidth, mHeight);
+    /**
+     * 打开已经加入数据库的书籍
+     * @param bookId
+     */
+    public void openBook(long bookId){
+        //先检查bookId是否存在
+        mBook = mBookDao.load(bookId);
+        if (mBook == null){
+            //书籍不存在
+            //// TODO: 2017/3/11  书籍不存在，后续需要加载错误页
+            return;
+        }
 
-        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mPaint.setTextSize(mFontSize);
-//        mPaint.setTextSize(ContextCompat.getColor(context, R.color.chapter_content_day));
-        mPaint.setColor(Color.BLACK);
-        mTitlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mTitlePaint.setTextSize(mNumFontSize);
-//        mTitlePaint.setColor(ContextCompat.getColor(AppUtils.getAppContext(), R.color.chapter_title_day));
-        timeLen = (int) mTitlePaint.measureText("00:00");
-        percentLen = (int) mTitlePaint.measureText("00.00%");
-        // Typeface typeface = Typeface.createFromAsset(context.getAssets(),"fonts/FZBYSK.TTF");
-        // mPaint.setTypeface(typeface);
-        // mNumPaint.setTypeface(typeface);
+        //处理状态
+        int processStatus = mBook.getProcessStatus();
 
-        this.bookId = bookId;
-        this.chaptersList = chaptersList;
+        switch (processStatus){
+            case Constants.BOOK_UNPROCESS:
+                //书籍还没有处理，应该交给上面的函数处理
+                openBook(mBook.getBookPath());
+                break;
+            case Constants.BOOK_PROCESSING:
+                //书籍正在处理中，但是还没有处理完成，应该继续下一步处理
+                break;
+            case Constants.BOOK_PROCESSED:
+                //处理完成，可以开始阅读啦
+                if (mBook.getCurrentChapter() != null) {
+                    currentChapter = mBook.getCurrentChapter();
+                }else{
+                    currentChapter = 1;
+                }
+                if (mBook.getCurrentPosition() != null) {
+                    currentPosition = mBook.getCurrentPosition();
+                }else{
+                    currentPosition = 0;
+                }
 
-        time = dateFormat.format(new Date());
+                File bookFile = new File(mBook.getBookPath());
+                mByteBufferLength = bookFile.length();
+                if (bookFile.exists() == false){
+                    //文件可能已经删除
+                    Log.e(TAG, "File doesn't exits");
+                    return;
+                }
+
+                //获取所有章节
+                mChapterList = mChapterDao.queryBuilder().where(ChapterDao.Properties.BookId.eq(mBook.getId())).orderAsc(ChapterDao.Properties.Id).list();
+
+                //开始读取当前章节
+                Chapter chapter = mChapterList.get(currentChapter);
+
+                try {
+                    mMappedByteBuffer = new RandomAccessFile(bookFile, "r").getChannel().map(FileChannel.MapMode.READ_ONLY, 0, mByteBufferLength);
+
+                    //此处应该根据整个页面的情况计算当前页面能显示多少字符
+
+
+                }catch(IOException e){
+                    //基本没可能了，上面已经确保了文件存在
+                    Log.e(TAG, e.getMessage());
+                }
+
+                break;
+        }
     }
 
+    /**
+     * 打开没有处理过的文件
+     * @param filePath
+     */
+    public void openBook(String filePath){
+        if (StringUtils.isBlank(filePath)){
+            //书籍路径为空
+            Log.e(TAG, "FilePath is empty!");
+            return;
+        }
 
-    public void openBook() {
-        openBook(new int[]{0, 0});
+        //判断文件是否存在
+        File bookFile = new File(filePath);
+        if (bookFile.exists() == false){
+            Log.e(TAG, "File is not exits");
+            return;
+        }
+
+        //文件存在，开始读取文件
+        try {
+            mByteBufferLength = bookFile.length();
+            mMappedByteBuffer = new RandomAccessFile(bookFile, "r").getChannel().map(FileChannel.MapMode.READ_ONLY, 0, mByteBufferLength);
+
+            if (mBook == null) {
+                mBook = new Book();
+            }
+            mBook.setBookName(bookFile.getName());
+            mBook.setBookPath(filePath);
+            mBook.setCharSet("");//先插入数据库中，chatset只在后续需要处理
+            mBook.setDescription("");
+            mBook.setBookImagePath("");
+            mBook.setProcessStatus(Constants.BOOK_UNPROCESS);
+            mBook.setCurrentChapter(1); //章节从1开始
+            mBook.setCurrentPosition(0);
+            long bookId = mBookDao.insert(mBook);
+            mBook.setId(bookId);
+
+            //开始处理章节
+            ThreadPool.getInstance().submitTask(new OpenBookTask());
+        } catch (Exception e) {
+            //文件已经判断是否存在了，理论上只有文件保存到数据库失败会出现问题
+            Log.e(TAG, e.getMessage());
+        }
     }
-
-    public void openBook(int[] position) {
-        openBook(1, position);
-    }
-
 
     private class OpenBookTask implements Runnable {
-        private String bookPath;
-
-        public OpenBookTask(String bookPath) {
-            this.bookPath = bookPath;
-        }
-
         @Override
         public void run() {
-            BookStatus statusCode = BookStatus.STATUS_OK;
-            Book book = new Book();
+            if (mBook == null || StringUtils.isBlank(mBook.getBookPath())) {
+                Log.e(TAG, "Error filePath");
+                return;
+            }
+            String charSet = FileUtils.getJavaEncode(mBook.getBookPath());//这个步骤需要消耗不少的时间
 
-            File file = new File(bookPath);
-            if (file.exists() == true) {
-                book.setBookName(file.getName());
-                book.setBookPath(bookPath);
-                String charSet = FileUtils.getJavaEncode(bookPath);
-                book.setCharSet(charSet);
-                book.setDescription("");
-                book.setBookImagePath("");
-                try {
-                    long id = mBookDao.insert(book);
-                    book.setId(id);
-                    //开始读取书籍信息
-                    openBook(0, 0);
-                }catch (Exception e){
-                    //插入数据库的时候可能会失败
-                    statusCode = BookStatus.STATUS_DATABASE_ERROR;
-                }
-            } else {
-                statusCode = BookStatus.STATUS_FILE_NOT_FOUND_ERROR;
-            }
-            if (listener != null) {
-                listener.onBookLoaded(statusCode, book);
-            }
+            mBook.setProcessStatus(Constants.BOOK_PROCESSING);
+            mBook.setCharSet(charSet);
+            mBookDao.update(mBook);
+
+            processChapters();//刷新页面
+
+            mBook.setProcessStatus(Constants.BOOK_PROCESSED);
+            mBookDao.update(mBook);
         }
     }
+
+
 
     /**
      * 读书籍目录，断章
      * 这个需要放到一个线程里面运行
      */
     public void processChapters() {
-        if (chapterList == null) {
-            chapterList = new ArrayList<>();
-        }
         int currentPosition = 0;
         int lastPosition = 0;
 
         Pattern pattern = Pattern.compile("第.{1,7}章.*\r\n");
 
-        while (currentPosition < mbBufferLen) {
+        while (currentPosition < mByteBufferLength) {
             byte[] bytes = readParagraphForward(currentPosition);
-
             try {
-                String paragraph = new String(bytes, book.getCharSet());
-
+                String paragraph = new String(bytes, mBook.getCharSet());
                 Matcher matcher = pattern.matcher(paragraph);
                 if (matcher.find()) {
                     //修正章节错
                     if (currentPosition - lastPosition > 200 && bytes.length < 50) {
-                        if (book != null) {
+                        if (mBook != null) {
                             Chapter chapter = new Chapter();
-                            chapter.setId(null);
                             chapter.setTitle(matcher.group());
                             chapter.setPosition(currentPosition);
                             chapter.setIsRead(false);
-                            chapter.setBook(book);
+                            chapter.setBook(mBook);
                             //插入数据库
                             mChapterDao.insert(chapter);
-                            chapterList.add(chapter);
 
                             lastPosition = currentPosition;
                         }
                     }
                 }
-
             } catch (UnsupportedEncodingException e) {
                 //不支持编码
+                Log.e(TAG, "Book encoding is not supported");
             }
 
             currentPosition += bytes.length;
         }
-    }
-
-
-    /**
-     * 打开书籍文件
-     *
-     * @param chapter  阅读章节
-     * @param position 阅读位置
-     * @return 0：文件不存在或打开失败  1：打开成功
-     */
-    public int openBook(int chapter, int position) {
-        this.currentChapter = chapter;
-        this.chapterSize = chaptersList.size();
-        if (currentChapter > chapterSize)
-            currentChapter = chapterSize;
-        String path = getBookFile(currentChapter).getPath();
-        try {
-            File file = new File(path);
-            long length = file.length();
-            if (length > 10) {
-                mbBufferLen = (int) length;
-                // 创建文件通道，映射为MappedByteBuffer
-                mbBuff = new RandomAccessFile(file, "r")
-                        .getChannel()
-                        .map(FileChannel.MapMode.READ_ONLY, 0, length);
-                curBeginPos = position;
-                onChapterChanged(chapter);
-                mLines.clear();
-                return 1;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    /**
-     * 绘制阅读页面
-     *
-     * @param canvas
-     */
-    public synchronized void onDraw(Canvas canvas) {
-        if (mLines.size() == 0) {
-            curEndPos = curBeginPos;
-            mLines = pageDown();
-        }
-        if (mLines.size() > 0) {
-            int y = marginHeight + (mLineSpace << 1);
-            // 绘制背景
-            if (mBookPageBg != null) {
-                canvas.drawBitmap(mBookPageBg, null, rectF, null);
-            } else {
-                canvas.drawColor(Color.WHITE);
-            }
-            // 绘制标题
-            canvas.drawText(chaptersList.get(currentChapter - 1).getTitle(), marginWidth, y, mTitlePaint);
-            y += mLineSpace + mNumFontSize;
-            // 绘制阅读页面文字
-            for (String line : mLines) {
-                y += mLineSpace;
-                if (line.endsWith("@")) {
-                    canvas.drawText(line.substring(0, line.length() - 1), marginWidth, y, mPaint);
-                    y += mLineSpace;
-                } else {
-                    canvas.drawText(line, marginWidth, y, mPaint);
-                }
-                y += mFontSize;
-            }
-            // 绘制提示内容
-            if (batteryBitmap != null) {
-                canvas.drawBitmap(batteryBitmap, marginWidth + 2,
-                        mHeight - marginHeight - ScreenUtils.dp2px(mContext, 12), mTitlePaint);
-            }
-
-            float percent = (float) currentChapter * 100 / chapterSize;
-            canvas.drawText(decimalFormat.format(percent) + "%", (mWidth - percentLen) / 2,
-                    mHeight - marginHeight, mTitlePaint);
-
-            String mTime = dateFormat.format(new Date());
-            canvas.drawText(mTime, mWidth - marginWidth - timeLen, mHeight - marginHeight, mTitlePaint);
-
-            // 保存阅读进度
-            book.setCurrentPosition(currentChapter);
-            book.setCurrentChapter(curBeginPos);
-        }
-    }
-
-    /**
-     * 指针移到上一页页首
-     */
-    private void pageUp() {
-        String strParagraph = "";
-        Vector<String> lines = new Vector<>(); // 页面行
-        int paraSpace = 0;
-        mPageLineCount = mVisibleHeight / (mFontSize + mLineSpace);
-        while ((lines.size() < mPageLineCount) && (curBeginPos > 0)) {
-            Vector<String> paraLines = new Vector<>(); // 段落行
-            byte[] parabuffer = readParagraphBack(curBeginPos); // 1.读取上一个段落
-
-            curBeginPos -= parabuffer.length; // 2.变换起始位置指针
-            try {
-                strParagraph = new String(parabuffer, charset);
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            strParagraph = strParagraph.replaceAll("\r\n", "  ");
-            strParagraph = strParagraph.replaceAll("\n", " ");
-
-            while (strParagraph.length() > 0) { // 3.逐行添加到lines
-                int paintSize = mPaint.breakText(strParagraph, true, mVisibleWidth, null);
-                paraLines.add(strParagraph.substring(0, paintSize));
-                strParagraph = strParagraph.substring(paintSize);
-            }
-            lines.addAll(0, paraLines);
-
-            while (lines.size() > mPageLineCount) { // 4.如果段落添加完，但是超出一页，则超出部分需删减
-                try {
-                    curBeginPos += lines.get(0).getBytes(charset).length; // 5.删减行数同时起始位置指针也要跟着偏移
-                    lines.remove(0);
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-            }
-            curEndPos = curBeginPos; // 6.最后结束指针指向下一段的开始处
-            paraSpace += mLineSpace;
-            mPageLineCount = (mVisibleHeight - paraSpace) / (mFontSize + mLineSpace); // 添加段落间距，实时更新容纳行数
-        }
-    }
-
-    /**
-     * 根据起始位置指针，读取一页内容
-     *
-     * @return
-     */
-    private Vector<String> pageDown() {
-        String strParagraph = "";
-        Vector<String> lines = new Vector<>();
-        int paraSpace = 0;
-        mPageLineCount = mVisibleHeight / (mFontSize + mLineSpace);
-        while ((lines.size() < mPageLineCount) && (curEndPos < mbBufferLen)) {
-            byte[] parabuffer = readParagraphForward(curEndPos);
-            curEndPos += parabuffer.length;
-            try {
-                strParagraph = new String(parabuffer, charset);
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            strParagraph = strParagraph.replaceAll("\r\n", "  ")
-                    .replaceAll("\n", " "); // 段落中的换行符去掉，绘制的时候再换行
-
-            while (strParagraph.length() > 0) {
-                int paintSize = mPaint.breakText(strParagraph, true, mVisibleWidth, null);
-                lines.add(strParagraph.substring(0, paintSize));
-                strParagraph = strParagraph.substring(paintSize);
-                if (lines.size() >= mPageLineCount) {
-                    break;
-                }
-            }
-            lines.set(lines.size() - 1, lines.get(lines.size() - 1) + "@");
-            if (strParagraph.length() != 0) {
-                try {
-                    curEndPos -= (strParagraph).getBytes(charset).length;
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-            }
-            paraSpace += mLineSpace;
-            mPageLineCount = (mVisibleHeight - paraSpace) / (mFontSize + mLineSpace);
-        }
-        return lines;
-    }
-
-    /**
-     * 获取最后一页的内容。比较繁琐，待优化
-     *
-     * @return
-     */
-    public Vector<String> pageLast() {
-        String strParagraph = "";
-        Vector<String> lines = new Vector<>();
-        currentPage = 0;
-        while (curEndPos < mbBufferLen) {
-            int paraSpace = 0;
-            mPageLineCount = mVisibleHeight / (mFontSize + mLineSpace);
-            curBeginPos = curEndPos;
-            while ((lines.size() < mPageLineCount) && (curEndPos < mbBufferLen)) {
-                byte[] parabuffer = readParagraphForward(curEndPos);
-                curEndPos += parabuffer.length;
-                try {
-                    strParagraph = new String(parabuffer, charset);
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-                strParagraph = strParagraph.replaceAll("\r\n", "  ");
-                strParagraph = strParagraph.replaceAll("\n", " "); // 段落中的换行符去掉，绘制的时候再换行
-
-                while (strParagraph.length() > 0) {
-                    int paintSize = mPaint.breakText(strParagraph, true, mVisibleWidth, null);
-                    lines.add(strParagraph.substring(0, paintSize));
-                    strParagraph = strParagraph.substring(paintSize);
-                    if (lines.size() >= mPageLineCount) {
-                        break;
-                    }
-                }
-                lines.set(lines.size() - 1, lines.get(lines.size() - 1) + "@");
-
-                if (strParagraph.length() != 0) {
-                    try {
-                        curEndPos -= (strParagraph).getBytes(charset).length;
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                    }
-                }
-                paraSpace += mLineSpace;
-                mPageLineCount = (mVisibleHeight - paraSpace) / (mFontSize + mLineSpace);
-            }
-            if (curEndPos < mbBufferLen) {
-                lines.clear();
-            }
-            currentPage++;
-        }
-        //SettingManager.getInstance().saveReadProgress(bookId, currentChapter, curBeginPos, curEndPos);
-        return lines;
     }
 
     /**
@@ -488,8 +241,8 @@ public class PageFactory {
     private byte[] readParagraphForward(int curEndPos) {
         byte b0;
         int i = curEndPos;
-        while (i < mbBufferLen) {
-            b0 = mbBuff.get(i++);
+        while (i < mByteBufferLength) {
+            b0 = mMappedByteBuffer.get(i++);
             if (b0 == 0x0a) {
                 break;
             }
@@ -497,7 +250,7 @@ public class PageFactory {
         int nParaSize = i - curEndPos;
         byte[] buf = new byte[nParaSize];
         for (i = 0; i < nParaSize; i++) {
-            buf[i] = mbBuff.get(curEndPos + i);
+            buf[i] = mMappedByteBuffer.get(curEndPos + i);
         }
         return buf;
     }
@@ -512,7 +265,7 @@ public class PageFactory {
         byte b0;
         int i = curBeginPos - 1;
         while (i > 0) {
-            b0 = mbBuff.get(i);
+            b0 = mMappedByteBuffer.get(i);
             if (b0 == 0x0a && i != curBeginPos - 1) {
                 i++;
                 break;
@@ -522,201 +275,8 @@ public class PageFactory {
         int nParaSize = curBeginPos - i;
         byte[] buf = new byte[nParaSize];
         for (int j = 0; j < nParaSize; j++) {
-            buf[j] = mbBuff.get(i + j);
+            buf[j] = mMappedByteBuffer.get(i + j);
         }
         return buf;
-    }
-
-    public boolean hasNextPage() {
-        return currentChapter < chaptersList.size() || curEndPos < mbBufferLen;
-    }
-
-    public boolean hasPrePage() {
-        return currentChapter > 1 || (currentChapter == 1 && curBeginPos > 0);
-    }
-
-    /**
-     * 跳转下一页
-     */
-    public BookStatus nextPage() {
-        if (!hasNextPage()) { // 最后一章的结束页
-            return BookStatus.NO_NEXT_PAGE;
-        } else {
-            tempChapter = currentChapter;
-            tempBeginPos = curBeginPos;
-            if (curEndPos >= mbBufferLen) { // 中间章节结束页
-                currentChapter++;
-                int ret = openBook(currentChapter, new int[]{0, 0}); // 打开下一章
-                if (ret == 0) {
-                    onLoadChapterFailure(currentChapter);
-                    currentChapter--;
-                    return BookStatus.NEXT_CHAPTER_LOAD_FAILURE;
-                } else {
-                    currentPage = 0;
-                    onChapterChanged(currentChapter);
-                }
-            }
-            mLines.clear();
-            curBeginPos = curEndPos; // 起始指针移到结束位置
-            mLines = pageDown(); // 读取一页内容
-            onPageChanged(currentChapter, ++currentPage);
-        }
-        return BookStatus.LOAD_SUCCESS;
-    }
-
-    /**
-     * 跳转上一页
-     */
-    public BookStatus prePage() {
-        if (!hasPrePage()) { // 第一章第一页
-            return BookStatus.NO_PRE_PAGE;
-        } else {
-            // 保存当前页的值
-            tempChapter = currentChapter;
-            tempBeginPos = curBeginPos;
-            if (curBeginPos <= 0) {
-                currentChapter--;
-                int ret = openBook(currentChapter, new int[]{0, 0});
-                if (ret == 0) {
-                    onLoadChapterFailure(currentChapter);
-                    currentChapter++;
-                    return BookStatus.PRE_CHAPTER_LOAD_FAILURE;
-                } else { // 跳转到上一章的最后一页
-                    mLines.clear();
-                    mLines = pageLast();
-                    onChapterChanged(currentChapter);
-                    onPageChanged(currentChapter, currentPage);
-                    return BookStatus.LOAD_SUCCESS;
-                }
-            }
-            mLines.clear();
-            pageUp(); // 起始指针移到上一页开始处
-            mLines = pageDown(); // 读取一页内容
-            onPageChanged(currentChapter, --currentPage);
-        }
-        return BookStatus.LOAD_SUCCESS;
-    }
-
-    public void cancelPage() {
-        currentChapter = tempChapter;
-        curBeginPos = tempBeginPos;
-        curEndPos = curBeginPos;
-
-        int ret = openBook(currentChapter, new int[]{curBeginPos, curEndPos});
-        if (ret == 0) {
-            onLoadChapterFailure(currentChapter);
-            return;
-        }
-        mLines.clear();
-        mLines = pageDown();
-    }
-
-    /**
-     * 获取当前阅读位置
-     *
-     * @return index 0：起始位置 1：结束位置
-     */
-    public int[] getPosition() {
-        return new int[]{currentChapter, curBeginPos, curEndPos};
-    }
-
-    public String getHeadLineStr() {
-        if (mLines != null && mLines.size() > 1) {
-            return mLines.get(0);
-        }
-        return "";
-    }
-
-    /**
-     * 设置字体大小
-     *
-     * @param fontSize 单位：px
-     */
-    public void setTextFont(int fontSize) {
-        LogUtil.log.i(fontSize + "");
-        mFontSize = fontSize;
-        mLineSpace = mFontSize / 5 * 2;
-        mPaint.setTextSize(mFontSize);
-        mPageLineCount = mVisibleHeight / (mFontSize + mLineSpace);
-        curEndPos = curBeginPos;
-        nextPage();
-    }
-
-    /**
-     * 设置字体颜色
-     *
-     * @param textColor
-     * @param titleColor
-     */
-    public void setTextColor(int textColor, int titleColor) {
-        mPaint.setColor(textColor);
-        mTitlePaint.setColor(titleColor);
-    }
-
-    public int getTextFont() {
-        return mFontSize;
-    }
-
-    /**
-     * 根据百分比，跳到目标位置
-     *
-     * @param persent
-     */
-    public void setPercent(int persent) {
-        float a = (float) (mbBufferLen * persent) / 100;
-        curEndPos = (int) a;
-        if (curEndPos == 0) {
-            nextPage();
-        } else {
-            nextPage();
-            prePage();
-            nextPage();
-        }
-    }
-
-    public void setBgBitmap(Bitmap BG) {
-        mBookPageBg = BG;
-    }
-
-    public void setOnReadStateChangeListener(OnReadStateChangeListener listener) {
-        this.listener = listener;
-    }
-
-    void onChapterChanged(int chapter) {
-        if (listener != null)
-            listener.onChapterChanged(chapter);
-    }
-
-    void onPageChanged(int chapter, int page) {
-        if (listener != null)
-            listener.onPageChanged(book, chapter, page);
-    }
-
-    void onLoadChapterFailure(int chapter) {
-        if (listener != null)
-            listener.onLoadChapterFailure(book, chapter);
-    }
-
-//    public void convertBetteryBitmap() {
-//        batteryView = (ProgressBar) LayoutInflater.from(mContext).inflate(R.layout.layout_battery_progress, null);
-//        batteryView.setProgressDrawable(ContextCompat.getDrawable(mContext,
-//                SettingManager.getInstance().getReadTheme() < 4 ?
-//                        R.drawable.seekbar_battery_bg : R.drawable.seekbar_battery_night_bg));
-//        batteryView.setProgress(battery);
-//        batteryView.setDrawingCacheEnabled(true);
-//        batteryView.measure(View.MeasureSpec.makeMeasureSpec(ScreenUtils.dpToPxInt(26), View.MeasureSpec.EXACTLY),
-//                View.MeasureSpec.makeMeasureSpec(ScreenUtils.dpToPxInt(14), View.MeasureSpec.EXACTLY));
-//        batteryView.layout(0, 0, batteryView.getMeasuredWidth(), batteryView.getMeasuredHeight());
-//        batteryView.buildDrawingCache();
-//        batteryBitmap = batteryView.getDrawingCache();
-//    }
-
-//    public void setBattery(int battery) {
-//        this.battery = battery;
-//        convertBetteryBitmap();
-//    }
-
-    public void setTime(String time) {
-        this.time = time;
     }
 }

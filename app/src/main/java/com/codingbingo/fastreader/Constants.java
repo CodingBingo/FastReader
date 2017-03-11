@@ -13,7 +13,21 @@ public class Constants {
     public static final int TYPE_FROM_MAIN_ACTIVITY = 1;
     public static final int TYPE_FROM_LOCAL_FILE_ACTIVITY = 2;
 
-    public static final int BOOK_NORMAL = 0;
+    /**
+     * 只是插入数据，未做任何处理
+     */
+    public static final int BOOK_UNPROCESS = -1;
+
+    /**
+     * 已经读取编码方式
+     */
+    public static final int BOOK_CHARSETFINISH = 0;
+    /**
+     * 正在处理中
+     */
     public static final int BOOK_PROCESSING = 1;
+    /**
+     *
+     */
     public static final int BOOK_PROCESSED = 2;
 }

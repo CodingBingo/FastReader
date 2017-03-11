@@ -4,6 +4,7 @@
     android:layout_height="match_parent">
 
     <RelativeLayout
+        android:id="@+id/controllerTopBar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:paddingRight="10dp"
@@ -12,6 +13,7 @@
         android:background="@color/black">
 
         <ImageView
+
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_centerVertical="true"
@@ -27,6 +29,7 @@
     </RelativeLayout>
 
     <LinearLayout
+        android:id="@+id/controllerBottomBar"
         android:layout_width="match_parent"
         android:layout_height="130dp"
         android:layout_alignParentBottom="true"

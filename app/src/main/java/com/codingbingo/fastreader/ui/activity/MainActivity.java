@@ -92,6 +92,8 @@ public class MainActivity extends BaseActivity implements
         menuPopupWindow.setAnimationStyle(R.style.PopupAnimation);
 
         BookListAdapter bookListAdapter = new BookListAdapter(this, bookList);
+        //图书列表点击事件
+        bookListAdapter.setOnBookListItemClickListener(this);
         bookListView.setLayoutManager(new GridLayoutManager(this, 3));
         bookListView.setNestedScrollingEnabled(false);
         bookListView.setHasFixedSize(false);
@@ -153,7 +155,6 @@ public class MainActivity extends BaseActivity implements
     public void onBookItemClick(Book book, int position) {
         if (book == null){
             //添加书籍
-
             Intent intent = new Intent(MainActivity.this, LocalFileListActivity.class);
             startActivity(intent);
         } else {

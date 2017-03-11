@@ -45,7 +45,6 @@ public abstract class BaseReadView extends View {
 
     protected void init(){
         try {
-            pageFactory.onDraw(mCurrentPageCanvas);
             postInvalidate();
         }catch (Exception e){
 

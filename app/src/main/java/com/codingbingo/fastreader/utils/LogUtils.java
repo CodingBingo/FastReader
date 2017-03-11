@@ -1,5 +1,7 @@
 package com.codingbingo.fastreader.utils;
 
+import android.util.Log;
+
 /**
  * Author: bingo
  * Email: codingbingo@gmail.com
