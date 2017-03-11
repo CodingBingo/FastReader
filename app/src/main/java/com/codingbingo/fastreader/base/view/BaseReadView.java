@@ -3,9 +3,15 @@ package com.codingbingo.fastreader.base.view;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.PointF;
 import android.view.View;
+import android.widget.Scroller;
 
+import com.codingbingo.fastreader.utils.ScreenUtils;
 import com.codingbingo.fastreader.view.readview.PageFactory;
+import com.codingbingo.fastreader.view.readview.interfaces.OnReadStateChangeListener;
+
+import java.util.List;
 
 /**
  * Created by bingo on 2017/1/4.
@@ -13,34 +19,40 @@ import com.codingbingo.fastreader.view.readview.PageFactory;
 
 public abstract class BaseReadView extends View {
 
-    protected long bookId;
+    protected int mScreenWidth;
+    protected int mScreenHeight;
 
-    //屏幕属性
-    protected int screenWidth;
-    protected int screenHeight;
+    protected PointF mTouch = new PointF();
+    protected float actiondownX, actiondownY;
+    protected float touch_down = 0; // 当前触摸点与按下时的点的差值
 
-    //当前页
-    protected Bitmap mCurrentPageBitmap;
-    protected Canvas mCurrentPageCanvas;
-    //下一页
-    protected Bitmap mNextPageBitmap;
-    protected Canvas mNextPageCanvas;
+    protected Bitmap mCurPageBitmap, mNextPageBitmap;
+    protected Canvas mCurrentPageCanvas, mNextPageCanvas;
+    protected PageFactory pagefactory = null;
 
+    protected OnReadStateChangeListener listener;
+    protected String bookId;
+    public boolean isPrepared = false;
 
-    protected PageFactory pageFactory;
+    Scroller mScroller;
 
-    public BaseReadView(Context context) {
+    public BaseReadView(Context context, String bookId, OnReadStateChangeListener listener) {
         super(context);
+        this.listener = listener;
+        this.bookId = bookId;
 
-        mCurrentPageBitmap = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
-        mNextPageBitmap = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
+        mScreenWidth = ScreenUtils.getScreenWidth(context);
+        mScreenHeight = ScreenUtils.getScreenHeight(context);
 
-        mCurrentPageCanvas = new Canvas(mCurrentPageBitmap);
+        mCurPageBitmap = Bitmap.createBitmap(mScreenWidth, mScreenHeight, Bitmap.Config.ARGB_8888);
+        mNextPageBitmap = Bitmap.createBitmap(mScreenWidth, mScreenHeight, Bitmap.Config.ARGB_8888);
+        mCurrentPageCanvas = new Canvas(mCurPageBitmap);
         mNextPageCanvas = new Canvas(mNextPageBitmap);
 
+        mScroller = new Scroller(getContext());
 
-        pageFactory = new PageFactory(context);
-
+        pagefactory = new PageFactory(context);
+//        pagefactory.setOnReadStateChangeListener(listener);
     }
 
     protected void init(){
@@ -53,11 +65,20 @@ public abstract class BaseReadView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-
-
+        calcPoints();
         drawCurrentPageArea(canvas);
+        drawNextPageAreaAndShadow(canvas);
+        drawCurrentPageShadow(canvas);
+        drawCurrentBackArea(canvas);
     }
 
+    protected abstract void drawNextPageAreaAndShadow(Canvas canvas);
+
+    protected abstract void drawCurrentPageShadow(Canvas canvas);
+
+    protected abstract void drawCurrentBackArea(Canvas canvas);
+
     protected abstract void drawCurrentPageArea(Canvas canvas);
+
+    protected abstract void calcPoints();
 }

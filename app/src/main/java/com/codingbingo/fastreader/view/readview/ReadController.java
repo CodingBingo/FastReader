@@ -70,7 +70,7 @@ public class ReadController extends FrameLayout implements View.OnTouchListener{
         }
         isShowing = !isShowing;
 
-
+        //onTouch事件只有在点击中间的时候才返回true
         return false;
     }
 
@@ -89,6 +89,8 @@ public class ReadController extends FrameLayout implements View.OnTouchListener{
         controllerTopBar = (RelativeLayout) findViewById(R.id.controllerTopBar);
         controllerBottomBar = (LinearLayout) findViewById(R.id.controllerBottomBar);
 
+        //开始进来之后就要隐藏控制栏
+        hideController();
     }
 
     private void hideController() {

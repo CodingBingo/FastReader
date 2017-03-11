@@ -26,6 +26,7 @@ public class ReadingActivity extends BaseActivity implements ReadController.OnCo
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        switchFullScreen(true);
         setContentView(R.layout.activity_reading);
 
         init();
