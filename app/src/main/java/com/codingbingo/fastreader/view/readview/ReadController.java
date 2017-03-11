@@ -8,10 +8,12 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.codingbingo.fastreader.R;
+import com.codingbingo.fastreader.view.readview.interfaces.OnControllerStatusChangeListener;
 
 /**
  * Author: bingo
@@ -24,12 +26,15 @@ public class ReadController extends FrameLayout implements View.OnTouchListener{
     private RelativeLayout controllerTopBar;
     private LinearLayout controllerBottomBar;
 
+    private ImageView backBtn;
+
     private Animation topOutAnimation;
     private Animation topInAnimation;
     private Animation bottomOutAnimation;
     private Animation bottomInAnimation;
 
     private OnControllerStatusChangeListener onControllerStatusChangeListener;
+    private OnClickListener onClickListener;
     private boolean isShowing = false;
 
     public ReadController(Context context) {
@@ -45,6 +50,7 @@ public class ReadController extends FrameLayout implements View.OnTouchListener{
         mContext = context;
 
         init();
+        initView();
 
         this.setOnTouchListener(this);
         isShowing = false;
@@ -54,9 +60,13 @@ public class ReadController extends FrameLayout implements View.OnTouchListener{
     public boolean onTouch(View v, MotionEvent event) {
         float x = event.getX();
         float y = event.getY();
-
         int width = v.getWidth();
         int height = v.getHeight();
+
+        if (x < width / 2 - 100 || x > width/2 + 100 ){
+            //onTouch事件只有在点击中间的时候才返回true
+            return false;
+        }
 
         if (isShowing){
             hideController();
@@ -70,8 +80,7 @@ public class ReadController extends FrameLayout implements View.OnTouchListener{
         }
         isShowing = !isShowing;
 
-        //onTouch事件只有在点击中间的时候才返回true
-        return false;
+        return true;
     }
 
     private void init(){
@@ -93,6 +102,12 @@ public class ReadController extends FrameLayout implements View.OnTouchListener{
         hideController();
     }
 
+    private void initView(){
+        backBtn = (ImageView) findViewById(R.id.backBtn);
+
+
+    }
+
     private void hideController() {
         controllerTopBar.startAnimation(topOutAnimation);
         controllerBottomBar.startAnimation(bottomOutAnimation);
@@ -107,7 +122,9 @@ public class ReadController extends FrameLayout implements View.OnTouchListener{
         this.onControllerStatusChangeListener = onControllerStatusChangeListener;
     }
 
-    public interface OnControllerStatusChangeListener{
-        void onControllerStatusChange(boolean isShowing);
+    public void setOnViewClickListener(OnClickListener onClickListener) {
+        this.onClickListener = onClickListener;
+
+        backBtn.setOnClickListener(onClickListener);
     }
 }

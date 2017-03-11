@@ -13,7 +13,7 @@
         android:background="@color/black">
 
         <ImageView
-
+            android:id="@+id/backBtn"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_centerVertical="true"

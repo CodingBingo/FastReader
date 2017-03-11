@@ -3,6 +3,7 @@ package com.codingbingo.fastreader.ui.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.view.View;
 import android.view.WindowManager;
 
 import com.codingbingo.fastreader.Constants;
@@ -10,6 +11,7 @@ import com.codingbingo.fastreader.R;
 import com.codingbingo.fastreader.base.BaseActivity;
 import com.codingbingo.fastreader.view.readview.PageFactory;
 import com.codingbingo.fastreader.view.readview.ReadController;
+import com.codingbingo.fastreader.view.readview.interfaces.OnControllerStatusChangeListener;
 
 /**
  * Author: bingo
@@ -17,7 +19,7 @@ import com.codingbingo.fastreader.view.readview.ReadController;
  * By 2017/1/11.
  */
 
-public class ReadingActivity extends BaseActivity implements ReadController.OnControllerStatusChangeListener {
+public class ReadingActivity extends BaseActivity implements OnControllerStatusChangeListener, View.OnClickListener {
 
     private ReadController readController;
 
@@ -56,6 +58,7 @@ public class ReadingActivity extends BaseActivity implements ReadController.OnCo
     private void initView() {
         readController = (ReadController) findViewById(R.id.readController);
         readController.setOnControllerStatusChangeListener(this);
+        readController.setOnViewClickListener(this);
     }
 
     private void switchFullScreen(boolean isFullScreen) {
@@ -75,5 +78,15 @@ public class ReadingActivity extends BaseActivity implements ReadController.OnCo
     @Override
     public void onControllerStatusChange(boolean isShowing) {
         switchFullScreen(!isShowing);
+    }
+
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+        switch (id){
+            case R.id.backBtn:
+                finish();
+                break;
+        }
     }
 }

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 
 import com.codingbingo.fastreader.base.view.BaseReadView;
+import com.codingbingo.fastreader.view.readview.interfaces.OnReadStateChangeListener;
 
 /**
  * Author: bingo
@@ -12,18 +13,33 @@ import com.codingbingo.fastreader.base.view.BaseReadView;
  */
 
 public class PageWidget extends BaseReadView {
-    public PageWidget(Context context) {
-        super(context);
+
+    public PageWidget(Context context, String bookId, OnReadStateChangeListener listener) {
+        super(context, bookId, listener);
     }
 
     @Override
     protected void drawCurrentPageArea(Canvas canvas) {
-        canvas.save();
-        canvas.drawBitmap(mCurrentPageBitmap, 0, 0, null);
-        try {
-            canvas.restore();
-        } catch (Exception e) {
 
-        }
+    }
+
+    @Override
+    protected void drawNextPageAreaAndShadow(Canvas canvas) {
+
+    }
+
+    @Override
+    protected void drawCurrentPageShadow(Canvas canvas) {
+
+    }
+
+    @Override
+    protected void drawCurrentBackArea(Canvas canvas) {
+
+    }
+
+    @Override
+    protected void calcPoints() {
+
     }
 }
