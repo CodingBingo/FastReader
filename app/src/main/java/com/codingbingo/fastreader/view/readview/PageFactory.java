@@ -53,16 +53,21 @@ public class PageFactory {
 
     private Paint mTitlePaint;
     private Paint mPaint;
+    private Paint mBottomPaint;
 
     //当前的章节以及位置
+    private int totalWidth;
+    private int totleHeight;
     private int currentChapter = 1;
     private int currentStartPosition = 0;
     private int currentEndPosition = 0;
     private int mLineCount;
-    private int mVisibleHeight, mVisibleWidth;
+    private int mVisibleHeight;
+    private int mVisibleWidth;
     private int mLineSpace;
     private int mFontSize;
     private int mTitleFontSize;
+    private int mBottomFontSize;
     private int marginWidth;
     private int marginHeight;
 
@@ -84,12 +89,17 @@ public class PageFactory {
 
     private void init(){
         mTitleFontSize = ScreenUtils.dp2px(mContext, 17);
+        mBottomFontSize = ScreenUtils.dp2px(mContext, 15);
 
         marginWidth = ScreenUtils.dp2px(mContext, 15);
         marginHeight = ScreenUtils.dp2px(mContext, 15);
 
-        mVisibleWidth = ScreenUtils.getScreenWidth(mContext) - 2 * marginWidth;
-        mVisibleHeight = ScreenUtils.getScreenHeight(mContext) - 2 * marginHeight - mTitleFontSize;
+
+        totalWidth = ScreenUtils.getScreenWidth(mContext);
+        totleHeight = ScreenUtils.getScreenHeight(mContext);
+
+        mVisibleWidth = totalWidth - 2 * marginWidth;
+        mVisibleHeight = totleHeight - marginHeight - mTitleFontSize - mBottomFontSize;
 
         mFontSize = SettingManager.getInstance().getReadFontSize();
         mLineSpace = mFontSize / 5 * 2;
@@ -101,6 +111,10 @@ public class PageFactory {
         mTitlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mTitlePaint.setTextSize(mTitleFontSize);
         mTitlePaint.setColor(Color.GRAY);
+
+        mBottomPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mBottomPaint.setTextSize(mBottomFontSize);
+        mBottomPaint.setColor(Color.GRAY);
     }
 
     /**
@@ -181,14 +195,31 @@ public class PageFactory {
             //绘制章节名称
             canvas.drawText(mChapterList.get(currentChapter - 1).getTitle(), marginWidth, y, mTitlePaint);
             y += mTitleFontSize;
+
+            //绘制内容
             for (String line : mLines) {
                 y += mLineSpace;
                 canvas.drawText(line, marginWidth, y, mPaint);
                 y += mFontSize;
             }
 
-
+            //绘制底部
+            float progress = getReadProgress();
+            String progressPercent = String.format("%.2f", progress * 100) + "%";
+            int bottomPositionX = (int) (totalWidth / 2 - mBottomPaint.measureText(progressPercent) / 2);
+            int bottomPositionY = totleHeight - mBottomFontSize / 2;
+            canvas.drawText(progressPercent, bottomPositionX, bottomPositionY, mBottomPaint);
         }
+    }
+
+    private float getReadProgress(){
+        float progress = 0;
+        if (mByteBufferLength != 0){
+            progress = currentStartPosition * 1.0f / mByteBufferLength;
+            return progress;
+        }
+
+        return progress;
     }
 
     private List<String> pageDown() {
