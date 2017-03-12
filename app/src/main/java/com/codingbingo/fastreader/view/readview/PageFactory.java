@@ -51,15 +51,18 @@ public class PageFactory {
     private List<Chapter> mChapterList;
     private long mByteBufferLength;
 
+    private Paint mTitlePaint;
     private Paint mPaint;
 
     //当前的章节以及位置
     private int currentChapter = 1;
-    private int currentStartPosition = 0, currentEndPosition = 0;
+    private int currentStartPosition = 0;
+    private int currentEndPosition = 0;
     private int mLineCount;
     private int mVisibleHeight, mVisibleWidth;
     private int mLineSpace;
     private int mFontSize;
+    private int mTitleFontSize;
     private int marginWidth;
     private int marginHeight;
 
@@ -80,11 +83,13 @@ public class PageFactory {
     }
 
     private void init(){
+        mTitleFontSize = ScreenUtils.dp2px(mContext, 17);
+
         marginWidth = ScreenUtils.dp2px(mContext, 15);
         marginHeight = ScreenUtils.dp2px(mContext, 15);
 
         mVisibleWidth = ScreenUtils.getScreenWidth(mContext) - 2 * marginWidth;
-        mVisibleHeight = ScreenUtils.getScreenHeight(mContext) - 2 * marginHeight;
+        mVisibleHeight = ScreenUtils.getScreenHeight(mContext) - 2 * marginHeight - mTitleFontSize;
 
         mFontSize = SettingManager.getInstance().getReadFontSize();
         mLineSpace = mFontSize / 5 * 2;
@@ -92,6 +97,10 @@ public class PageFactory {
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setTextSize(mFontSize);
         mPaint.setColor(Color.BLACK);
+
+        mTitlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mTitlePaint.setTextSize(mTitleFontSize);
+        mTitlePaint.setColor(Color.GRAY);
     }
 
     /**
@@ -166,15 +175,15 @@ public class PageFactory {
         }
 
         if (mLines.size() > 0){
-            int y = marginHeight;
-
+            int y = marginHeight + mTitleFontSize / 2;
             //绘制背景，后面添加换背景功能
             canvas.drawColor(Color.WHITE);
-
+            //绘制章节名称
+            canvas.drawText(mChapterList.get(currentChapter - 1).getTitle(), marginWidth, y, mTitlePaint);
+            y += mTitleFontSize;
             for (String line : mLines) {
                 y += mLineSpace;
                 canvas.drawText(line, marginWidth, y, mPaint);
-
                 y += mFontSize;
             }
 
