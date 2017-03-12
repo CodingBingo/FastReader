@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.avos.avoscloud.AVAnalytics;
 import com.codingbingo.fastreader.FRApplication;
@@ -45,6 +46,10 @@ public class BaseActivity extends AppCompatActivity{
      */
     protected DaoSession getDaoSession(){
         return ((FRApplication) getApplication()).getDaoSession();
+    }
+
+    protected void showToast(String content){
+        Toast.makeText(this, content, Toast.LENGTH_SHORT).show();
     }
 
     /**

@@ -3,6 +3,7 @@ package com.codingbingo.fastreader.ui.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 
@@ -99,5 +100,18 @@ public class ReadingActivity extends BaseActivity implements OnControllerStatusC
                 finish();
                 break;
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            readPageWidget.nextPage();
+            return true;
+        } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            readPageWidget.prePage();
+            return true;
+        }
+
+        return super.onKeyDown(keyCode, event);
     }
 }

@@ -66,7 +66,7 @@ public class MainActivity extends BaseActivity implements
     }
 
     private void init() {
-        mBookDao = ((FRApplication) getApplication()).getDaoSession().getBookDao();
+        mBookDao = getDaoSession().getBookDao();
 
         bookList = mBookDao.loadAll();
     }

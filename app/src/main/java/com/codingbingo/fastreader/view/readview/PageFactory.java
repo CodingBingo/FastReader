@@ -200,24 +200,14 @@ public class PageFactory {
             //绘制内容
             for (String line : mLines) {
                 y += mLineSpace;
-                if (y >= bottomPositionY){
-                    try {
-                        currentEndPosition -= line.getBytes(charSet).length;
-                        //// TODO: 2017/3/12  
-                        //通知下一页状态需要改标
-                    }catch (UnsupportedEncodingException e){
-                        Log.e(TAG, e.getMessage());
-                    }
+                if (line.endsWith("@")){
+                    line = line.substring(0, line.length() - 1);
+                    canvas.drawText(line, marginWidth, y, mPaint);
+                    y += mLineSpace;
                 }else{
-                    if (line.endsWith("@")){
-                        line = line.substring(0, line.length() - 1);
-                        canvas.drawText(line, marginWidth, y, mPaint);
-                        y += mLineSpace;
-                    }else{
-                        canvas.drawText(line, marginWidth, y, mPaint);
-                    }
-                    y += mFontSize;
+                    canvas.drawText(line, marginWidth, y, mPaint);
                 }
+                y += mFontSize;
             }
 
             //绘制底部
@@ -239,10 +229,50 @@ public class PageFactory {
         return progress;
     }
 
+    private List<String> pageUp() {
+        String paragraphStr = "";
+        List<String> lines = new ArrayList<>();
+        mLineCount = mVisibleHeight / (mFontSize + mLineSpace);
+        int paraSpace = 0;//段落中间会添加的空白
+        while((lines.size() < mLineCount) && currentStartPosition > 0){
+            List<String> paragraphLines = new ArrayList<>();
+            byte[] paragraphBuffer = readParagraphBack(currentStartPosition);
+            currentStartPosition -= paragraphBuffer.length;
+            try{
+                paragraphStr = new String(paragraphBuffer, charSet);
+            }catch (UnsupportedEncodingException e){
+                Log.e(TAG, e.getMessage());
+            }
+
+            paragraphStr = paragraphStr.replaceAll("\r\n", "  ").replaceAll("\n", " "); // 段落中的换行符去掉，绘制的时候再换行
+            while(paragraphStr.length() > 0){
+                int paintSize = mPaint.breakText(paragraphStr, true, mVisibleWidth, null);
+                paragraphLines.add(paragraphStr.substring(0, paintSize));
+                paragraphStr = paragraphStr.substring(paintSize);
+            }
+
+            lines.addAll(0, paragraphLines);
+
+            while (lines.size() > mLineCount) { // 4.如果段落添加完，但是超出一页，则超出部分需删减
+                try {
+                    currentStartPosition += lines.get(0).getBytes(charSet).length; // 5.删减行数同时起始位置指针也要跟着偏移
+                    lines.remove(0);
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
+            currentEndPosition = currentStartPosition; // 6.最后结束指针指向下一段的开始处
+            paraSpace += mLineSpace;
+            mLineCount = (mVisibleHeight - paraSpace) / (mFontSize + mLineSpace); // 添加段落间距，实时更新容纳行数
+        }
+
+        return lines;
+    }
+
     private List<String> pageDown() {
         String paragraphStr = "";
         List<String> lines = new ArrayList<>();
-
+        int paraSpace = 0;
         mLineCount = mVisibleHeight / (mFontSize + mLineSpace);
         while((lines.size() < mLineCount) && currentEndPosition < mByteBufferLength){
             byte[] paragraphBuffer = readParagraphForward(currentEndPosition);
@@ -270,6 +300,9 @@ public class PageFactory {
                     Log.e(TAG, e.getLocalizedMessage());
                 }
             }
+
+            paraSpace += mLineSpace;
+            mLineCount = (mVisibleHeight - paraSpace) / (mFontSize + mLineSpace);
         }
 
         return lines;
@@ -318,6 +351,14 @@ public class PageFactory {
             //文件已经判断是否存在了，理论上只有文件保存到数据库失败会出现问题
             Log.e(TAG, e.getMessage());
         }
+    }
+
+    public boolean hasNextPage() {
+        return currentChapter < mChapterList.size() || currentEndPosition < mByteBufferLength;
+    }
+
+    public boolean hasPrePage() {
+        return currentChapter > 1 || (currentChapter == 1 && currentStartPosition > 0);
     }
 
     private class OpenBookTask implements Runnable {
@@ -428,5 +469,67 @@ public class PageFactory {
             buf[j] = mMappedByteBuffer.get(i + j);
         }
         return buf;
+    }
+
+    /**
+     * 跳转下一页
+     */
+    public BookStatus nextPage() {
+        if (!hasNextPage()) { // 最后一章的结束页
+            return BookStatus.NO_NEXT_PAGE;
+        } else {
+            tempChapter = currentChapter;
+            tempBeginPos = curBeginPos;
+            if (curEndPos >= mbBufferLen) { // 中间章节结束页
+                currentChapter++;
+                int ret = openBook(currentChapter, new int[]{0, 0}); // 打开下一章
+                if (ret == 0) {
+                    onLoadChapterFailure(currentChapter);
+                    currentChapter--;
+                    return BookStatus.NEXT_CHAPTER_LOAD_FAILURE;
+                } else {
+                    currentPage = 0;
+                    onChapterChanged(currentChapter);
+                }
+            }
+            mLines.clear();
+            curBeginPos = curEndPos; // 起始指针移到结束位置
+            mLines = pageDown(); // 读取一页内容
+            onPageChanged(currentChapter, ++currentPage);
+        }
+        return BookStatus.LOAD_SUCCESS;
+    }
+
+    /**
+     * 跳转上一页
+     */
+    public BookStatus prePage() {
+        if (!hasPrePage()) { // 第一章第一页
+            return BookStatus.NO_PRE_PAGE;
+        } else {
+            // 保存当前页的值
+            tempChapter = currentChapter;
+            tempBeginPos = curBeginPos;
+            if (curBeginPos <= 0) {
+                currentChapter--;
+                int ret = openBook(currentChapter, new int[]{0, 0});
+                if (ret == 0) {
+                    onLoadChapterFailure(currentChapter);
+                    currentChapter++;
+                    return BookStatus.PRE_CHAPTER_LOAD_FAILURE;
+                } else { // 跳转到上一章的最后一页
+                    mLines.clear();
+                    mLines = pageLast();
+                    onChapterChanged(currentChapter);
+                    onPageChanged(currentChapter, currentPage);
+                    return BookStatus.LOAD_SUCCESS;
+                }
+            }
+            mLines.clear();
+            pageUp(); // 起始指针移到上一页开始处
+            mLines = pageDown(); // 读取一页内容
+            onPageChanged(currentChapter, --currentPage);
+        }
+        return BookStatus.LOAD_SUCCESS;
     }
 }

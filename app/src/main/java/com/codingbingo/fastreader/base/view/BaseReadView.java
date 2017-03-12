@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Scroller;
+import android.widget.Toast;
 
 import com.codingbingo.fastreader.FRApplication;
 import com.codingbingo.fastreader.dao.Book;
@@ -18,6 +19,7 @@ import com.codingbingo.fastreader.dao.Chapter;
 import com.codingbingo.fastreader.dao.ChapterDao;
 import com.codingbingo.fastreader.dao.DaoSession;
 import com.codingbingo.fastreader.utils.ScreenUtils;
+import com.codingbingo.fastreader.view.readview.BookStatus;
 import com.codingbingo.fastreader.view.readview.PageFactory;
 import com.codingbingo.fastreader.view.readview.interfaces.OnReadStateChangeListener;
 
@@ -28,6 +30,7 @@ import java.util.List;
  */
 
 public abstract class BaseReadView extends View {
+    protected Context mContext;
 
     protected int mScreenWidth;
     protected int mScreenHeight;
@@ -63,6 +66,8 @@ public abstract class BaseReadView extends View {
 
     public BaseReadView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+
+        mContext = context;
 
         mScreenWidth = ScreenUtils.getScreenWidth(context);
         mScreenHeight = ScreenUtils.getScreenHeight(context);
@@ -176,4 +181,45 @@ public abstract class BaseReadView extends View {
     protected abstract void calcPoints();
 
     protected abstract void calcCornerXY(float x, float y);
+
+    /**
+     * 显示Toast提示
+     * @param content
+     */
+    protected void showToast(String content){
+        Toast.makeText(mContext, content, Toast.LENGTH_SHORT).show();
+    }
+
+    public void nextPage() {
+        BookStatus status = pagefactory.nextPage();
+        if (status == BookStatus.NO_NEXT_PAGE) {
+            showToast("没有下一页啦");
+            return;
+        } else if (status == BookStatus.LOAD_SUCCESS) {
+            if (isPrepared) {
+                pagefactory.onDraw(mCurrentPageCanvas);
+                pagefactory.onDraw(mNextPageCanvas);
+                postInvalidate();
+            }
+        } else {
+            return;
+        }
+
+    }
+
+    public void prePage() {
+        BookStatus status = pagefactory.prePage();
+        if (status == BookStatus.NO_PRE_PAGE) {
+            showToast("没有上一页啦");
+            return;
+        } else if (status == BookStatus.LOAD_SUCCESS) {
+            if (isPrepared) {
+                pagefactory.onDraw(mCurrentPageCanvas);
+                pagefactory.onDraw(mNextPageCanvas);
+                postInvalidate();
+            }
+        } else {
+            return;
+        }
+    }
 }
