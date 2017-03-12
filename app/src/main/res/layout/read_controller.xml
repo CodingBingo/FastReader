@@ -3,37 +3,51 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.support.v7.widget.Toolbar
+    <LinearLayout
         android:id="@+id/controllerTopBar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:paddingRight="10dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:alpha="0.6"
-        android:background="@color/black">
+        android:alpha="0.85"
+        android:background="@color/black"
+        android:orientation="vertical">
 
-        <ImageView
-            android:id="@+id/backBtn"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_centerVertical="true"
-            android:src="@drawable/arrow_left_white" />
+        <View
+            android:id="@+id/status_bar_bg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
-        <ImageView
-            android:src="@drawable/more"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:paddingRight="10dp">
 
-    </android.support.v7.widget.Toolbar>
+            <ImageView
+                android:id="@+id/backBtn"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_centerVertical="true"
+                android:layout_marginTop="25dp"
+                android:src="@drawable/arrow_left_white" />
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/more" />
+
+        </RelativeLayout>
+
+
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/controllerBottomBar"
         android:layout_width="match_parent"
         android:layout_height="130dp"
         android:layout_alignParentBottom="true"
-        android:alpha="0.6"
+        android:alpha="0.85"
         android:background="@color/black"
         android:orientation="vertical">
 

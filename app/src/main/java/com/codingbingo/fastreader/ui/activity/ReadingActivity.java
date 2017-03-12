@@ -8,11 +8,12 @@ import android.view.WindowManager;
 
 import com.codingbingo.fastreader.Constants;
 import com.codingbingo.fastreader.R;
-import com.codingbingo.fastreader.base.CompatStatusBarActivity;
+import com.codingbingo.fastreader.base.BaseActivity;
 import com.codingbingo.fastreader.utils.StringUtils;
 import com.codingbingo.fastreader.view.readview.PageWidget;
 import com.codingbingo.fastreader.view.readview.ReadController;
 import com.codingbingo.fastreader.view.readview.interfaces.OnControllerStatusChangeListener;
+
 
 /**
  * Author: bingo
@@ -20,7 +21,7 @@ import com.codingbingo.fastreader.view.readview.interfaces.OnControllerStatusCha
  * By 2017/1/11.
  */
 
-public class ReadingActivity extends CompatStatusBarActivity implements OnControllerStatusChangeListener, View.OnClickListener {
+public class ReadingActivity extends BaseActivity implements OnControllerStatusChangeListener, View.OnClickListener {
 
     private ReadController readController;
     private PageWidget readPageWidget;
@@ -34,6 +35,7 @@ public class ReadingActivity extends CompatStatusBarActivity implements OnContro
         super.onCreate(savedInstanceState);
         switchFullScreen(true);
         setContentView(R.layout.activity_reading);
+
 
         init();
         initView();

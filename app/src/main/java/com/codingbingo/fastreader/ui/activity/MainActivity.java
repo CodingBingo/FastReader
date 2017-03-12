@@ -19,7 +19,7 @@ import android.widget.TextView;
 import com.codingbingo.fastreader.Constants;
 import com.codingbingo.fastreader.FRApplication;
 import com.codingbingo.fastreader.R;
-import com.codingbingo.fastreader.base.CompatStatusBarActivity;
+import com.codingbingo.fastreader.base.BaseActivity;
 import com.codingbingo.fastreader.dao.Book;
 import com.codingbingo.fastreader.dao.BookDao;
 import com.codingbingo.fastreader.ui.adapter.BookListAdapter;
@@ -27,9 +27,9 @@ import com.codingbingo.fastreader.utils.ScreenUtils;
 
 import java.util.List;
 
-public class MainActivity extends CompatStatusBarActivity implements
+public class MainActivity extends BaseActivity implements
         NestedScrollView.OnScrollChangeListener, View.OnClickListener,
-        BookListAdapter.OnBookListItemClickListener{
+        BookListAdapter.OnBookListItemClickListener {
 
     private int normalTopPanelHeight = 0;
     private int totalChangeAlphaArea = 0;
@@ -153,7 +153,7 @@ public class MainActivity extends CompatStatusBarActivity implements
 
     @Override
     public void onBookItemClick(Book book, int position) {
-        if (book == null){
+        if (book == null) {
             //添加书籍
             Intent intent = new Intent(MainActivity.this, LocalFileListActivity.class);
             startActivity(intent);

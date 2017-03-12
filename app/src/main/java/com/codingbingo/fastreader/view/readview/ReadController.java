@@ -1,19 +1,19 @@
 package com.codingbingo.fastreader.view.readview;
 
 import android.content.Context;
-import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import com.codingbingo.fastreader.R;
+import com.codingbingo.fastreader.utils.ScreenUtils;
 import com.codingbingo.fastreader.view.readview.interfaces.OnControllerStatusChangeListener;
 
 /**
@@ -22,9 +22,10 @@ import com.codingbingo.fastreader.view.readview.interfaces.OnControllerStatusCha
  * By 2017/1/11.
  */
 
-public class ReadController extends FrameLayout implements View.OnTouchListener{
+public class ReadController extends FrameLayout implements View.OnTouchListener, Animation.AnimationListener {
     private Context mContext;
-    private Toolbar controllerTopBar;
+    private View statusBarBg;
+    private LinearLayout controllerTopBar;
     private LinearLayout controllerBottomBar;
 
     private ImageView backBtn;
@@ -38,6 +39,8 @@ public class ReadController extends FrameLayout implements View.OnTouchListener{
     private OnClickListener onClickListener;
     private boolean isShowing = false;
 
+    private int statusBarHeight;
+
     public ReadController(Context context) {
         this(context, null, 0);
     }
@@ -49,6 +52,9 @@ public class ReadController extends FrameLayout implements View.OnTouchListener{
     public ReadController(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mContext = context;
+
+        //获取对应的高度
+        statusBarHeight = ScreenUtils.getStatusBarHeight(context);
 
         init();
         initView();
@@ -64,38 +70,44 @@ public class ReadController extends FrameLayout implements View.OnTouchListener{
         int width = v.getWidth();
         int height = v.getHeight();
 
-        if (isShowing){
+        if (isShowing) {
             hideController();
-        }else{
+        } else {
             showController();
         }
 
         //返回controller状态
         isShowing = !isShowing;
-        if (onControllerStatusChangeListener != null){
-            onControllerStatusChangeListener.onControllerStatusChange(isShowing);
+        if (isShowing) {
+            if (onControllerStatusChangeListener != null) {
+                onControllerStatusChangeListener.onControllerStatusChange(isShowing);
+            }
         }
-
         return false;
     }
 
-    private void init(){
+    private void init() {
         LayoutInflater.from(mContext).inflate(R.layout.read_controller, this);
 
         topOutAnimation = AnimationUtils.loadAnimation(mContext, R.anim.top_out_animation);
         topInAnimation = AnimationUtils.loadAnimation(mContext, R.anim.top_in_animation);
         bottomInAnimation = AnimationUtils.loadAnimation(mContext, R.anim.bottom_in_animation);
         bottomOutAnimation = AnimationUtils.loadAnimation(mContext, R.anim.bottom_out_animation);
+
         topInAnimation.setFillAfter(true);
         topOutAnimation.setFillAfter(true);
         bottomInAnimation.setFillAfter(true);
         bottomOutAnimation.setFillAfter(true);
+
+        topOutAnimation.setAnimationListener(this);
     }
 
-    private void initView(){
-        controllerTopBar = (Toolbar) findViewById(R.id.controllerTopBar);
-        controllerBottomBar = (LinearLayout) findViewById(R.id.controllerBottomBar);
+    private void initView() {
+        statusBarBg = findViewById(R.id.status_bar_bg);
+        statusBarBg.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, statusBarHeight));//调整高度，让界面变得流畅点
 
+        controllerTopBar = (LinearLayout) findViewById(R.id.controllerTopBar);
+        controllerBottomBar = (LinearLayout) findViewById(R.id.controllerBottomBar);
         backBtn = (ImageView) findViewById(R.id.backBtn);
 
         //开始进来之后就要隐藏控制栏
@@ -120,5 +132,22 @@ public class ReadController extends FrameLayout implements View.OnTouchListener{
         this.onClickListener = onClickListener;
 
         backBtn.setOnClickListener(onClickListener);
+    }
+
+    @Override
+    public void onAnimationStart(Animation animation) {
+
+    }
+
+    @Override
+    public void onAnimationEnd(Animation animation) {
+        if (onControllerStatusChangeListener != null) {
+            onControllerStatusChangeListener.onControllerStatusChange(isShowing);
+        }
+    }
+
+    @Override
+    public void onAnimationRepeat(Animation animation) {
+
     }
 }
