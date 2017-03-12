@@ -26,7 +26,7 @@ public class SettingManager {
     }
 
     public int getReadFontSize(){
-        return instance.sharedPreferenceUtils.getInt("fontSize", 20);
+        return instance.sharedPreferenceUtils.getInt("fontSize", 45);
     }
 
 }

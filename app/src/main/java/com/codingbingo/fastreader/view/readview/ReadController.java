@@ -1,6 +1,7 @@
 package com.codingbingo.fastreader.view.readview;
 
 import android.content.Context;
+import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -23,7 +24,7 @@ import com.codingbingo.fastreader.view.readview.interfaces.OnControllerStatusCha
 
 public class ReadController extends FrameLayout implements View.OnTouchListener{
     private Context mContext;
-    private RelativeLayout controllerTopBar;
+    private Toolbar controllerTopBar;
     private LinearLayout controllerBottomBar;
 
     private ImageView backBtn;
@@ -63,11 +64,6 @@ public class ReadController extends FrameLayout implements View.OnTouchListener{
         int width = v.getWidth();
         int height = v.getHeight();
 
-        if (x < width / 2 - 100 || x > width/2 + 100 ){
-            //onTouch事件只有在点击中间的时候才返回true
-            return false;
-        }
-
         if (isShowing){
             hideController();
         }else{
@@ -75,12 +71,12 @@ public class ReadController extends FrameLayout implements View.OnTouchListener{
         }
 
         //返回controller状态
-        if (onControllerStatusChangeListener != null){
-            onControllerStatusChangeListener.onControllerStatusChange(!isShowing);
-        }
         isShowing = !isShowing;
+        if (onControllerStatusChangeListener != null){
+            onControllerStatusChangeListener.onControllerStatusChange(isShowing);
+        }
 
-        return true;
+        return false;
     }
 
     private void init(){
@@ -94,18 +90,16 @@ public class ReadController extends FrameLayout implements View.OnTouchListener{
         topOutAnimation.setFillAfter(true);
         bottomInAnimation.setFillAfter(true);
         bottomOutAnimation.setFillAfter(true);
-
-        controllerTopBar = (RelativeLayout) findViewById(R.id.controllerTopBar);
-        controllerBottomBar = (LinearLayout) findViewById(R.id.controllerBottomBar);
-
-        //开始进来之后就要隐藏控制栏
-        hideController();
     }
 
     private void initView(){
+        controllerTopBar = (Toolbar) findViewById(R.id.controllerTopBar);
+        controllerBottomBar = (LinearLayout) findViewById(R.id.controllerBottomBar);
+
         backBtn = (ImageView) findViewById(R.id.backBtn);
 
-
+        //开始进来之后就要隐藏控制栏
+        hideController();
     }
 
     private void hideController() {

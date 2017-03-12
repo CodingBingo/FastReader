@@ -19,15 +19,15 @@ import android.widget.TextView;
 import com.codingbingo.fastreader.Constants;
 import com.codingbingo.fastreader.FRApplication;
 import com.codingbingo.fastreader.R;
+import com.codingbingo.fastreader.base.CompatStatusBarActivity;
 import com.codingbingo.fastreader.dao.Book;
 import com.codingbingo.fastreader.dao.BookDao;
 import com.codingbingo.fastreader.ui.adapter.BookListAdapter;
-import com.codingbingo.fastreader.base.BaseActivity;
 import com.codingbingo.fastreader.utils.ScreenUtils;
 
 import java.util.List;
 
-public class MainActivity extends BaseActivity implements
+public class MainActivity extends CompatStatusBarActivity implements
         NestedScrollView.OnScrollChangeListener, View.OnClickListener,
         BookListAdapter.OnBookListItemClickListener{
 

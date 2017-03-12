@@ -8,8 +8,9 @@ import android.view.WindowManager;
 
 import com.codingbingo.fastreader.Constants;
 import com.codingbingo.fastreader.R;
-import com.codingbingo.fastreader.base.BaseActivity;
-import com.codingbingo.fastreader.view.readview.PageFactory;
+import com.codingbingo.fastreader.base.CompatStatusBarActivity;
+import com.codingbingo.fastreader.utils.StringUtils;
+import com.codingbingo.fastreader.view.readview.PageWidget;
 import com.codingbingo.fastreader.view.readview.ReadController;
 import com.codingbingo.fastreader.view.readview.interfaces.OnControllerStatusChangeListener;
 
@@ -19,11 +20,14 @@ import com.codingbingo.fastreader.view.readview.interfaces.OnControllerStatusCha
  * By 2017/1/11.
  */
 
-public class ReadingActivity extends BaseActivity implements OnControllerStatusChangeListener, View.OnClickListener {
+public class ReadingActivity extends CompatStatusBarActivity implements OnControllerStatusChangeListener, View.OnClickListener {
 
     private ReadController readController;
+    private PageWidget readPageWidget;
 
-    private PageFactory pageFactory;
+    private long bookId;
+    private String bookPath;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -42,15 +46,13 @@ public class ReadingActivity extends BaseActivity implements OnControllerStatusC
             return;
         }
 
-        pageFactory = new PageFactory(getApplicationContext());
-
         switch (intent.getIntExtra("type", Constants.TYPE_FROM_MAIN_ACTIVITY)) {
             case Constants.TYPE_FROM_MAIN_ACTIVITY:
                 //从主页面进来的，说明本地数据已经插入数据库了
-                pageFactory.openBook(intent.getLongExtra("bookId", 0));
+                bookId = intent.getLongExtra("bookId", 0);
                 break;
             case Constants.TYPE_FROM_LOCAL_FILE_ACTIVITY:
-                pageFactory.openBook(intent.getStringExtra("bookPath"));
+                bookPath = intent.getStringExtra("bookPath");
                 break;
         }
     }
@@ -59,6 +61,13 @@ public class ReadingActivity extends BaseActivity implements OnControllerStatusC
         readController = (ReadController) findViewById(R.id.readController);
         readController.setOnControllerStatusChangeListener(this);
         readController.setOnViewClickListener(this);
+
+        readPageWidget = (PageWidget) findViewById(R.id.readPageWidget);
+        if (StringUtils.isBlank(bookPath)) {
+            readPageWidget.setBookId(bookId);
+        } else {
+            readPageWidget.setBookPath(bookPath);
+        }
     }
 
     private void switchFullScreen(boolean isFullScreen) {
@@ -83,7 +92,7 @@ public class ReadingActivity extends BaseActivity implements OnControllerStatusC
     @Override
     public void onClick(View v) {
         int id = v.getId();
-        switch (id){
+        switch (id) {
             case R.id.backBtn:
                 finish();
                 break;

@@ -1,6 +1,9 @@
 package com.codingbingo.fastreader.view.readview;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.util.Log;
 
 import com.codingbingo.fastreader.Constants;
@@ -10,17 +13,19 @@ import com.codingbingo.fastreader.dao.BookDao;
 import com.codingbingo.fastreader.dao.Chapter;
 import com.codingbingo.fastreader.dao.ChapterDao;
 import com.codingbingo.fastreader.dao.DaoSession;
+import com.codingbingo.fastreader.manager.SettingManager;
 import com.codingbingo.fastreader.utils.FileUtils;
+import com.codingbingo.fastreader.utils.ScreenUtils;
 import com.codingbingo.fastreader.utils.StringUtils;
 import com.codingbingo.fastreader.utils.ThreadPool;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,11 +50,23 @@ public class PageFactory {
     private Book mBook;
     private List<Chapter> mChapterList;
     private long mByteBufferLength;
+
+    private Paint mPaint;
+
     //当前的章节以及位置
     private int currentChapter = 1;
-    private int currentPosition = 0;
+    private int currentStartPosition = 0, currentEndPosition = 0;
+    private int mLineCount;
+    private int mVisibleHeight, mVisibleWidth;
+    private int mLineSpace;
+    private int mFontSize;
+    private int marginWidth;
+    private int marginHeight;
 
     private MappedByteBuffer mMappedByteBuffer;
+    private List<String> mLines = new ArrayList<>();
+
+    private String charSet = "UTF-8";
 
     public PageFactory(Context mContext) {
         this.mContext = mContext;
@@ -57,6 +74,24 @@ public class PageFactory {
         mDaoSession = ((FRApplication)mContext.getApplicationContext()).getDaoSession();
         mBookDao = mDaoSession.getBookDao();
         mChapterDao = mDaoSession.getChapterDao();
+
+
+        init();
+    }
+
+    private void init(){
+        marginWidth = ScreenUtils.dp2px(mContext, 15);
+        marginHeight = ScreenUtils.dp2px(mContext, 15);
+
+        mVisibleWidth = ScreenUtils.getScreenWidth(mContext) - 2 * marginWidth;
+        mVisibleHeight = ScreenUtils.getScreenHeight(mContext) - 2 * marginHeight;
+
+        mFontSize = SettingManager.getInstance().getReadFontSize();
+        mLineSpace = mFontSize / 5 * 2;
+
+        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mPaint.setTextSize(mFontSize);
+        mPaint.setColor(Color.BLACK);
     }
 
     /**
@@ -91,13 +126,15 @@ public class PageFactory {
                     currentChapter = 1;
                 }
                 if (mBook.getCurrentPosition() != null) {
-                    currentPosition = mBook.getCurrentPosition();
+                    currentStartPosition = mBook.getCurrentPosition();
                 }else{
-                    currentPosition = 0;
+                    currentStartPosition = 0;
                 }
 
                 File bookFile = new File(mBook.getBookPath());
                 mByteBufferLength = bookFile.length();
+                charSet = mBook.getCharSet();
+
                 if (bookFile.exists() == false){
                     //文件可能已经删除
                     Log.e(TAG, "File doesn't exits");
@@ -106,13 +143,10 @@ public class PageFactory {
 
                 //获取所有章节
                 mChapterList = mChapterDao.queryBuilder().where(ChapterDao.Properties.BookId.eq(mBook.getId())).orderAsc(ChapterDao.Properties.Id).list();
-
                 //开始读取当前章节
                 Chapter chapter = mChapterList.get(currentChapter);
-
                 try {
                     mMappedByteBuffer = new RandomAccessFile(bookFile, "r").getChannel().map(FileChannel.MapMode.READ_ONLY, 0, mByteBufferLength);
-
                     //此处应该根据整个页面的情况计算当前页面能显示多少字符
 
 
@@ -123,6 +157,65 @@ public class PageFactory {
 
                 break;
         }
+    }
+
+    public synchronized void onDraw(Canvas canvas){
+        if (mLines.size() == 0){
+            currentStartPosition = currentEndPosition;
+            mLines = pageDown();
+        }
+
+        if (mLines.size() > 0){
+            int y = marginHeight;
+
+            //绘制背景，后面添加换背景功能
+            canvas.drawColor(Color.WHITE);
+
+            for (String line : mLines) {
+                y += mLineSpace;
+                canvas.drawText(line, marginWidth, y, mPaint);
+
+                y += mFontSize;
+            }
+
+
+        }
+    }
+
+    private List<String> pageDown() {
+        String paragraphStr = "";
+        List<String> lines = new ArrayList<>();
+
+        mLineCount = mVisibleHeight / (mFontSize + mLineSpace);
+        while((lines.size() < mLineCount) && currentEndPosition < mByteBufferLength){
+            byte[] paragraphBuffer = readParagraphForward(currentEndPosition);
+            currentEndPosition += paragraphBuffer.length;
+            try{
+                paragraphStr = new String(paragraphBuffer, charSet);
+            }catch (Exception e){
+                Log.e(TAG, e.getLocalizedMessage());
+            }
+            paragraphStr = paragraphStr.replaceAll("\r\n", "  ").replaceAll("\n", " "); // 段落中的换行符去掉，绘制的时候再换行
+            while(paragraphStr.length() > 0){
+                int paintSize = mPaint.breakText(paragraphStr, true, mVisibleWidth, null);
+                lines.add(paragraphStr.substring(0, paintSize));
+                paragraphStr = paragraphStr.substring(paintSize);
+                if (lines.size() >= mLineCount){
+                    break;
+                }
+            }
+
+            lines.set(lines.size() - 1, lines.get(lines.size() - 1) + "@");
+            if (paragraphStr.length() != 0){
+                try{
+                    currentEndPosition -= paragraphStr.getBytes(charSet).length;
+                }catch (UnsupportedEncodingException e){
+                    Log.e(TAG, e.getLocalizedMessage());
+                }
+            }
+        }
+
+        return lines;
     }
 
     /**
