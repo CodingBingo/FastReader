@@ -196,18 +196,35 @@ public class PageFactory {
             canvas.drawText(mChapterList.get(currentChapter - 1).getTitle(), marginWidth, y, mTitlePaint);
             y += mTitleFontSize;
 
+            int bottomPositionY = totleHeight - mBottomFontSize / 2 - mLineSpace;
             //绘制内容
             for (String line : mLines) {
                 y += mLineSpace;
-                canvas.drawText(line, marginWidth, y, mPaint);
-                y += mFontSize;
+                if (y >= bottomPositionY){
+                    try {
+                        currentEndPosition -= line.getBytes(charSet).length;
+                        //// TODO: 2017/3/12  
+                        //通知下一页状态需要改标
+                    }catch (UnsupportedEncodingException e){
+                        Log.e(TAG, e.getMessage());
+                    }
+                }else{
+                    if (line.endsWith("@")){
+                        line = line.substring(0, line.length() - 1);
+                        canvas.drawText(line, marginWidth, y, mPaint);
+                        y += mLineSpace;
+                    }else{
+                        canvas.drawText(line, marginWidth, y, mPaint);
+                    }
+                    y += mFontSize;
+                }
             }
 
             //绘制底部
             float progress = getReadProgress();
             String progressPercent = String.format("%.2f", progress * 100) + "%";
             int bottomPositionX = (int) (totalWidth / 2 - mBottomPaint.measureText(progressPercent) / 2);
-            int bottomPositionY = totleHeight - mBottomFontSize / 2;
+
             canvas.drawText(progressPercent, bottomPositionX, bottomPositionY, mBottomPaint);
         }
     }
