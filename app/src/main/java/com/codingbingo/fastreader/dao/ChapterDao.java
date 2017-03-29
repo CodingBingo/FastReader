@@ -27,7 +27,7 @@ public class ChapterDao extends AbstractDao<Chapter, Long> {
     public static class Properties {
         public final static Property Id = new Property(0, Long.class, "id", true, "_id");
         public final static Property Title = new Property(1, String.class, "title", false, "TITLE");
-        public final static Property Position = new Property(2, long.class, "position", false, "POSITION");
+        public final static Property Position = new Property(2, int.class, "position", false, "POSITION");
         public final static Property PageCount = new Property(3, Integer.class, "pageCount", false, "PAGE_COUNT");
         public final static Property IsRead = new Property(4, Boolean.class, "isRead", false, "IS_READ");
         public final static Property BookId = new Property(5, long.class, "bookId", false, "BOOK_ID");
@@ -133,7 +133,7 @@ public class ChapterDao extends AbstractDao<Chapter, Long> {
         Chapter entity = new Chapter( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // title
-            cursor.getLong(offset + 2), // position
+            cursor.getInt(offset + 2), // position
             cursor.isNull(offset + 3) ? null : cursor.getInt(offset + 3), // pageCount
             cursor.isNull(offset + 4) ? null : cursor.getShort(offset + 4) != 0, // isRead
             cursor.getLong(offset + 5) // bookId
@@ -145,7 +145,7 @@ public class ChapterDao extends AbstractDao<Chapter, Long> {
     public void readEntity(Cursor cursor, Chapter entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setTitle(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
-        entity.setPosition(cursor.getLong(offset + 2));
+        entity.setPosition(cursor.getInt(offset + 2));
         entity.setPageCount(cursor.isNull(offset + 3) ? null : cursor.getInt(offset + 3));
         entity.setIsRead(cursor.isNull(offset + 4) ? null : cursor.getShort(offset + 4) != 0);
         entity.setBookId(cursor.getLong(offset + 5));

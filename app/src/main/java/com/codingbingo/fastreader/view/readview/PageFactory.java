@@ -49,11 +49,20 @@ public class PageFactory {
 
     private Book mBook;
     private List<Chapter> mChapterList;
+    private List<String> mLines = new ArrayList<>();
+
+    private MappedByteBuffer mMappedByteBuffer;
     private long mByteBufferLength;
 
     private Paint mTitlePaint;
     private Paint mPaint;
     private Paint mBottomPaint;
+
+    private boolean isNexPage = false;
+
+    //上一页或者下一页
+    private int tempChapter;
+    private int tempStartPos;
 
     //当前的章节以及位置
     private int totalWidth;
@@ -71,15 +80,12 @@ public class PageFactory {
     private int marginWidth;
     private int marginHeight;
 
-    private MappedByteBuffer mMappedByteBuffer;
-    private List<String> mLines = new ArrayList<>();
-
     private String charSet = "UTF-8";
 
     public PageFactory(Context mContext) {
         this.mContext = mContext;
 
-        mDaoSession = ((FRApplication)mContext.getApplicationContext()).getDaoSession();
+        mDaoSession = ((FRApplication) mContext.getApplicationContext()).getDaoSession();
         mBookDao = mDaoSession.getBookDao();
         mChapterDao = mDaoSession.getChapterDao();
 
@@ -87,7 +93,7 @@ public class PageFactory {
         init();
     }
 
-    private void init(){
+    private void init() {
         mTitleFontSize = ScreenUtils.dp2px(mContext, 17);
         mBottomFontSize = ScreenUtils.dp2px(mContext, 15);
 
@@ -119,12 +125,13 @@ public class PageFactory {
 
     /**
      * 打开已经加入数据库的书籍
+     *
      * @param bookId
      */
-    public void openBook(long bookId){
+    public void openBook(long bookId) {
         //先检查bookId是否存在
         mBook = mBookDao.load(bookId);
-        if (mBook == null){
+        if (mBook == null) {
             //书籍不存在
             //// TODO: 2017/3/11  书籍不存在，后续需要加载错误页
             return;
@@ -133,7 +140,7 @@ public class PageFactory {
         //处理状态
         int processStatus = mBook.getProcessStatus();
 
-        switch (processStatus){
+        switch (processStatus) {
             case Constants.BOOK_UNPROCESS:
                 //书籍还没有处理，应该交给上面的函数处理
                 openBook(mBook.getBookPath());
@@ -145,12 +152,12 @@ public class PageFactory {
                 //处理完成，可以开始阅读啦
                 if (mBook.getCurrentChapter() != null) {
                     currentChapter = mBook.getCurrentChapter();
-                }else{
+                } else {
                     currentChapter = 1;
                 }
                 if (mBook.getCurrentPosition() != null) {
                     currentStartPosition = mBook.getCurrentPosition();
-                }else{
+                } else {
                     currentStartPosition = 0;
                 }
 
@@ -158,7 +165,7 @@ public class PageFactory {
                 mByteBufferLength = bookFile.length();
                 charSet = mBook.getCharSet();
 
-                if (bookFile.exists() == false){
+                if (bookFile.exists() == false) {
                     //文件可能已经删除
                     Log.e(TAG, "File doesn't exits");
                     return;
@@ -173,7 +180,7 @@ public class PageFactory {
                     //此处应该根据整个页面的情况计算当前页面能显示多少字符
 
 
-                }catch(IOException e){
+                } catch (IOException e) {
                     //基本没可能了，上面已经确保了文件存在
                     Log.e(TAG, e.getMessage());
                 }
@@ -182,13 +189,13 @@ public class PageFactory {
         }
     }
 
-    public synchronized void onDraw(Canvas canvas){
-        if (mLines.size() == 0){
+    public synchronized void onDraw(Canvas canvas) {
+        if (mLines.size() == 0) {
             currentStartPosition = currentEndPosition;
             mLines = pageDown();
         }
 
-        if (mLines.size() > 0){
+        if (mLines.size() > 0) {
             int y = marginHeight + mTitleFontSize / 2;
             //绘制背景，后面添加换背景功能
             canvas.drawColor(Color.WHITE);
@@ -200,11 +207,11 @@ public class PageFactory {
             //绘制内容
             for (String line : mLines) {
                 y += mLineSpace;
-                if (line.endsWith("@")){
+                if (line.endsWith("@")) {
                     line = line.substring(0, line.length() - 1);
                     canvas.drawText(line, marginWidth, y, mPaint);
                     y += mLineSpace;
-                }else{
+                } else {
                     canvas.drawText(line, marginWidth, y, mPaint);
                 }
                 y += mFontSize;
@@ -219,9 +226,9 @@ public class PageFactory {
         }
     }
 
-    private float getReadProgress(){
+    private float getReadProgress() {
         float progress = 0;
-        if (mByteBufferLength != 0){
+        if (mByteBufferLength != 0) {
             progress = currentStartPosition * 1.0f / mByteBufferLength;
             return progress;
         }
@@ -234,18 +241,18 @@ public class PageFactory {
         List<String> lines = new ArrayList<>();
         mLineCount = mVisibleHeight / (mFontSize + mLineSpace);
         int paraSpace = 0;//段落中间会添加的空白
-        while((lines.size() < mLineCount) && currentStartPosition > 0){
+        while ((lines.size() < mLineCount) && currentStartPosition > 0) {
             List<String> paragraphLines = new ArrayList<>();
             byte[] paragraphBuffer = readParagraphBack(currentStartPosition);
             currentStartPosition -= paragraphBuffer.length;
-            try{
+            try {
                 paragraphStr = new String(paragraphBuffer, charSet);
-            }catch (UnsupportedEncodingException e){
+            } catch (UnsupportedEncodingException e) {
                 Log.e(TAG, e.getMessage());
             }
 
             paragraphStr = paragraphStr.replaceAll("\r\n", "  ").replaceAll("\n", " "); // 段落中的换行符去掉，绘制的时候再换行
-            while(paragraphStr.length() > 0){
+            while (paragraphStr.length() > 0) {
                 int paintSize = mPaint.breakText(paragraphStr, true, mVisibleWidth, null);
                 paragraphLines.add(paragraphStr.substring(0, paintSize));
                 paragraphStr = paragraphStr.substring(paintSize);
@@ -273,30 +280,43 @@ public class PageFactory {
         String paragraphStr = "";
         List<String> lines = new ArrayList<>();
         int paraSpace = 0;
+        //下一章节
+        Chapter nextChapter = mChapterList.get(currentChapter);
+
         mLineCount = mVisibleHeight / (mFontSize + mLineSpace);
-        while((lines.size() < mLineCount) && currentEndPosition < mByteBufferLength){
+        while ((lines.size() < mLineCount) && currentEndPosition < mByteBufferLength) {
             byte[] paragraphBuffer = readParagraphForward(currentEndPosition);
             currentEndPosition += paragraphBuffer.length;
-            try{
+            if (currentEndPosition >= nextChapter.getPosition() && isNexPage == false){
+                //已经到下一个章节了
+                isNexPage = true;
+                currentEndPosition -= paragraphBuffer.length;
+                return lines;
+            }
+            if (isNexPage == true){
+                isNexPage = false;
+                currentChapter ++;
+            }
+            try {
                 paragraphStr = new String(paragraphBuffer, charSet);
-            }catch (Exception e){
+            } catch (Exception e) {
                 Log.e(TAG, e.getLocalizedMessage());
             }
             paragraphStr = paragraphStr.replaceAll("\r\n", "  ").replaceAll("\n", " "); // 段落中的换行符去掉，绘制的时候再换行
-            while(paragraphStr.length() > 0){
+            while (paragraphStr.length() > 0) {
                 int paintSize = mPaint.breakText(paragraphStr, true, mVisibleWidth, null);
                 lines.add(paragraphStr.substring(0, paintSize));
                 paragraphStr = paragraphStr.substring(paintSize);
-                if (lines.size() >= mLineCount){
+                if (lines.size() >= mLineCount) {
                     break;
                 }
             }
 
             lines.set(lines.size() - 1, lines.get(lines.size() - 1) + "@");
-            if (paragraphStr.length() != 0){
-                try{
+            if (paragraphStr.length() != 0) {
+                try {
                     currentEndPosition -= paragraphStr.getBytes(charSet).length;
-                }catch (UnsupportedEncodingException e){
+                } catch (UnsupportedEncodingException e) {
                     Log.e(TAG, e.getLocalizedMessage());
                 }
             }
@@ -310,10 +330,11 @@ public class PageFactory {
 
     /**
      * 打开没有处理过的文件
+     *
      * @param filePath
      */
-    public void openBook(String filePath){
-        if (StringUtils.isBlank(filePath)){
+    public void openBook(String filePath) {
+        if (StringUtils.isBlank(filePath)) {
             //书籍路径为空
             Log.e(TAG, "FilePath is empty!");
             return;
@@ -321,7 +342,7 @@ public class PageFactory {
 
         //判断文件是否存在
         File bookFile = new File(filePath);
-        if (bookFile.exists() == false){
+        if (bookFile.exists() == false) {
             Log.e(TAG, "File is not exits");
             return;
         }
@@ -380,7 +401,6 @@ public class PageFactory {
             mBookDao.update(mBook);
         }
     }
-
 
 
     /**
@@ -479,23 +499,12 @@ public class PageFactory {
             return BookStatus.NO_NEXT_PAGE;
         } else {
             tempChapter = currentChapter;
-            tempBeginPos = curBeginPos;
-            if (curEndPos >= mbBufferLen) { // 中间章节结束页
-                currentChapter++;
-                int ret = openBook(currentChapter, new int[]{0, 0}); // 打开下一章
-                if (ret == 0) {
-                    onLoadChapterFailure(currentChapter);
-                    currentChapter--;
-                    return BookStatus.NEXT_CHAPTER_LOAD_FAILURE;
-                } else {
-                    currentPage = 0;
-                    onChapterChanged(currentChapter);
-                }
-            }
+            tempStartPos = currentStartPosition;
+
             mLines.clear();
-            curBeginPos = curEndPos; // 起始指针移到结束位置
-            mLines = pageDown(); // 读取一页内容
-            onPageChanged(currentChapter, ++currentPage);
+
+            mLines.addAll(pageDown());
+
         }
         return BookStatus.LOAD_SUCCESS;
     }
@@ -509,26 +518,25 @@ public class PageFactory {
         } else {
             // 保存当前页的值
             tempChapter = currentChapter;
-            tempBeginPos = curBeginPos;
-            if (curBeginPos <= 0) {
-                currentChapter--;
-                int ret = openBook(currentChapter, new int[]{0, 0});
-                if (ret == 0) {
-                    onLoadChapterFailure(currentChapter);
-                    currentChapter++;
-                    return BookStatus.PRE_CHAPTER_LOAD_FAILURE;
-                } else { // 跳转到上一章的最后一页
+            tempStartPos = currentStartPosition;
+
+            Chapter chapter = mChapterList.get(currentChapter - 1);
+            if (chapter.getPosition() == currentStartPosition) {
+                //说明这是一章的开头，上一页就要到上一个章节了，这里要直接对上一章节的部分分页
+                Chapter preChapter = new Chapter();
+                //上一章节开始的地方
+                currentStartPosition = preChapter.getPosition();
+                currentEndPosition = currentStartPosition;
+                while (currentEndPosition < tempStartPos - 1) {
                     mLines.clear();
-                    mLines = pageLast();
-                    onChapterChanged(currentChapter);
-                    onPageChanged(currentChapter, currentPage);
-                    return BookStatus.LOAD_SUCCESS;
+                    mLines.addAll(pageDown());
                 }
+            } else {
+                //不是章节开头，直接往前读取
+                mLines.clear();
+                pageUp(); // 起始指针移到上一页开始处
+                mLines = pageDown(); // 读取一页内容
             }
-            mLines.clear();
-            pageUp(); // 起始指针移到上一页开始处
-            mLines = pageDown(); // 读取一页内容
-            onPageChanged(currentChapter, --currentPage);
         }
         return BookStatus.LOAD_SUCCESS;
     }

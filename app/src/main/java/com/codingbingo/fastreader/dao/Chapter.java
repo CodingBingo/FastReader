@@ -16,7 +16,7 @@ public class Chapter {
     @Id(autoincrement = true)
     private Long id;
     private String title;
-    private long position;
+    private int position;
     private Integer pageCount;
     private Boolean isRead;
     private long bookId;
@@ -44,7 +44,7 @@ public class Chapter {
     }
 
     @Generated
-    public Chapter(Long id, String title, long position, Integer pageCount, Boolean isRead, long bookId) {
+    public Chapter(Long id, String title, int position, Integer pageCount, Boolean isRead, long bookId) {
         this.id = id;
         this.title = title;
         this.position = position;
@@ -76,11 +76,11 @@ public class Chapter {
         this.title = title;
     }
 
-    public long getPosition() {
+    public int getPosition() {
         return position;
     }
 
-    public void setPosition(long position) {
+    public void setPosition(int position) {
         this.position = position;
     }
 

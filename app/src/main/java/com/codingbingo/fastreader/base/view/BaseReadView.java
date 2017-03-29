@@ -47,7 +47,7 @@ public abstract class BaseReadView extends View {
     protected long bookId;
     protected String bookPath;
     protected Book book;
-    protected boolean isPrepared = false;
+    protected boolean isPrepared = true;
 
     protected Scroller mScroller;
 
@@ -125,28 +125,28 @@ public abstract class BaseReadView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
-        switch (e.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-
-                break;
-            case MotionEvent.ACTION_MOVE:
-                if (center)
-                    break;
-                int mx = (int) e.getX();
-                int my = (int) e.getY();
-                cancel = (actiondownX < mScreenWidth / 2 && mx < mTouch.x) || (actiondownX > mScreenWidth / 2 && mx > mTouch.x);
-                mTouch.x = mx;
-                mTouch.y = my;
-                touch_down = mTouch.x - actiondownX;
-                this.postInvalidate();
-                break;
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-
-                break;
-            default:
-                break;
-        }
+//        switch (e.getAction()) {
+//            case MotionEvent.ACTION_DOWN:
+//
+//                break;
+//            case MotionEvent.ACTION_MOVE:
+//                if (center)
+//                    break;
+//                int mx = (int) e.getX();
+//                int my = (int) e.getY();
+//                cancel = (actiondownX < mScreenWidth / 2 && mx < mTouch.x) || (actiondownX > mScreenWidth / 2 && mx > mTouch.x);
+//                mTouch.x = mx;
+//                mTouch.y = my;
+//                touch_down = mTouch.x - actiondownX;
+//                this.postInvalidate();
+//                break;
+//            case MotionEvent.ACTION_UP:
+//            case MotionEvent.ACTION_CANCEL:
+//
+//                break;
+//            default:
+//                break;
+//        }
         return true;
     }
 
@@ -198,7 +198,7 @@ public abstract class BaseReadView extends View {
         } else if (status == BookStatus.LOAD_SUCCESS) {
             if (isPrepared) {
                 pagefactory.onDraw(mCurrentPageCanvas);
-                pagefactory.onDraw(mNextPageCanvas);
+//                pagefactory.onDraw(mNextPageCanvas);
                 postInvalidate();
             }
         } else {

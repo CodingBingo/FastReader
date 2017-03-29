@@ -29,7 +29,7 @@ public class Main {
 
         chapter.addIdProperty().primaryKey().autoincrement();
         chapter.addStringProperty("title");
-        chapter.addLongProperty("position").notNull();
+        chapter.addIntProperty("position").notNull();
         chapter.addIntProperty("pageCount");
         chapter.addBooleanProperty("isRead");
         Property bookIdProperty = chapter.addLongProperty("bookId").notNull().getProperty();
