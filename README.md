@@ -3,4 +3,8 @@
 
 ## Todo:
 	1、完成基础阅读功能。
-	
+
+## 样式
+![image](/doc/images/MainView.png)
+
+
