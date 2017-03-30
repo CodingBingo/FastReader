@@ -26,7 +26,6 @@
             android:id="@+id/file_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="哥哥哥"
             android:textColor="@color/black"
             android:textSize="15dp" />
 
@@ -35,7 +34,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
-            android:text="320.0 KB"
             android:textColor="@color/grey"
             android:textSize="12dp" />
 

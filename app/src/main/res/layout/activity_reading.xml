@@ -1,17 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/reading_container"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
-    <com.codingbingo.fastreader.view.readview.PageWidget
-        android:id="@+id/readPageWidget"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-    <com.codingbingo.fastreader.view.readview.ReadController
-        android:id="@+id/readController"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
 
 </FrameLayout>

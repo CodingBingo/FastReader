@@ -11,6 +11,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import com.codingbingo.fastreader.R;
 import com.codingbingo.fastreader.utils.ScreenUtils;
@@ -27,6 +28,12 @@ public class ReadController extends FrameLayout implements View.OnTouchListener,
     private View statusBarBg;
     private LinearLayout controllerTopBar;
     private LinearLayout controllerBottomBar;
+    //书籍目录
+    private RelativeLayout mBookContents;
+    //阅读模式：黑夜模式、白天
+    private RelativeLayout mBookMode;
+    //书籍样式
+    private RelativeLayout mBookFonts;
 
     private ImageView backBtn;
 
@@ -109,6 +116,9 @@ public class ReadController extends FrameLayout implements View.OnTouchListener,
         controllerTopBar = (LinearLayout) findViewById(R.id.controllerTopBar);
         controllerBottomBar = (LinearLayout) findViewById(R.id.controllerBottomBar);
         backBtn = (ImageView) findViewById(R.id.backBtn);
+        mBookFonts = (RelativeLayout) findViewById(R.id.book_fonts);
+        mBookContents = (RelativeLayout) findViewById(R.id.book_contents);
+        mBookMode = (RelativeLayout) findViewById(R.id.book_mode);
 
         //开始进来之后就要隐藏控制栏
         hideController();
@@ -132,6 +142,9 @@ public class ReadController extends FrameLayout implements View.OnTouchListener,
         this.onClickListener = onClickListener;
 
         backBtn.setOnClickListener(onClickListener);
+        mBookContents.setOnClickListener(onClickListener);
+        mBookFonts.setOnClickListener(onClickListener);
+        mBookMode.setOnClickListener(onClickListener);
     }
 
     @Override

@@ -10,10 +10,8 @@ import android.view.WindowManager;
 import com.codingbingo.fastreader.Constants;
 import com.codingbingo.fastreader.R;
 import com.codingbingo.fastreader.base.BaseActivity;
-import com.codingbingo.fastreader.utils.StringUtils;
-import com.codingbingo.fastreader.view.readview.PageWidget;
-import com.codingbingo.fastreader.view.readview.ReadController;
-import com.codingbingo.fastreader.view.readview.interfaces.OnControllerStatusChangeListener;
+import com.codingbingo.fastreader.ui.fragment.ChapterListFragment;
+import com.codingbingo.fastreader.ui.fragment.ReadingFragment;
 
 
 /**
@@ -22,19 +20,24 @@ import com.codingbingo.fastreader.view.readview.interfaces.OnControllerStatusCha
  * By 2017/1/11.
  */
 
-public class ReadingActivity extends BaseActivity implements OnControllerStatusChangeListener, View.OnClickListener {
+public class ReadingActivity extends BaseActivity implements View.OnClickListener {
 
-    private ReadController readController;
-    private PageWidget readPageWidget;
+    private ChapterListFragment mChapterListFragment;
+    private ReadingFragment mReadingFragment;
+
 
     private long bookId;
     private String bookPath;
 
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        switchFullScreen(true);
+        //进入activity，先进入全屏状态
+        WindowManager.LayoutParams params = getWindow().getAttributes();
+        params.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
+        getWindow().setAttributes(params);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+
         setContentView(R.layout.activity_reading);
 
 
@@ -61,35 +64,19 @@ public class ReadingActivity extends BaseActivity implements OnControllerStatusC
     }
 
     private void initView() {
-        readController = (ReadController) findViewById(R.id.readController);
-        readController.setOnControllerStatusChangeListener(this);
-        readController.setOnViewClickListener(this);
 
-        readPageWidget = (PageWidget) findViewById(R.id.readPageWidget);
-        if (StringUtils.isBlank(bookPath)) {
-            readPageWidget.setBookId(bookId);
-        } else {
-            readPageWidget.setBookPath(bookPath);
-        }
-    }
 
-    private void switchFullScreen(boolean isFullScreen) {
-        if (isFullScreen) {
-            WindowManager.LayoutParams params = getWindow().getAttributes();
-            params.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
-            getWindow().setAttributes(params);
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-        } else {
-            WindowManager.LayoutParams params = getWindow().getAttributes();
-            params.flags &= (~WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            getWindow().setAttributes(params);
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-        }
-    }
+        mReadingFragment = new ReadingFragment();
+        mReadingFragment.setBookId(bookId);
+        mReadingFragment.setBookPath(bookPath);
+        mReadingFragment.setOnClickListener(this);
 
-    @Override
-    public void onControllerStatusChange(boolean isShowing) {
-        switchFullScreen(!isShowing);
+        mChapterListFragment = new ChapterListFragment();
+
+        getFragmentManager()
+                .beginTransaction()
+                .replace(R.id.reading_container, mReadingFragment)
+                .commit();
     }
 
     @Override
@@ -99,19 +86,40 @@ public class ReadingActivity extends BaseActivity implements OnControllerStatusC
             case R.id.backBtn:
                 finish();
                 break;
+            case R.id.book_contents:
+                getFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.reading_container, mChapterListFragment)
+                        .commit();
+                break;
+            case R.id.book_fonts:
+                break;
+            case R.id.book_mode:
+                break;
         }
     }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-            readPageWidget.nextPage();
-            return true;
-        } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-            readPageWidget.prePage();
-            return true;
+        if (mReadingFragment.isHidden() == false){
+            if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+                mReadingFragment.nextPage();
+                return true;
+            } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+                mReadingFragment.prePage();
+                return true;
+            }
         }
 
+        if (keyCode == KeyEvent.KEYCODE_BACK && mReadingFragment.isVisible() == false){
+            getFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.reading_container, mReadingFragment)
+                    .commit();
+            return true;
+        }
         return super.onKeyDown(keyCode, event);
     }
+
+
 }

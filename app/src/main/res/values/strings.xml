@@ -7,4 +7,6 @@
     <string name="add_local_file">本地书籍查看及导入</string>
     <string name="feedback">意见反馈</string>
     <string name="about">关于快读</string>
+
+    <string name="chapter_list">章节列表</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.codingbingo.fastreader.base;
 
+import android.app.FragmentManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -16,6 +17,9 @@ import com.codingbingo.fastreader.dao.DaoSession;
  */
 
 public class BaseActivity extends AppCompatActivity{
+
+    protected FragmentManager mFragmentManager;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,6 +30,15 @@ public class BaseActivity extends AppCompatActivity{
             //透明导航栏
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
         }
+
+        init();
+    }
+
+    /**
+     * 初始化操作
+     */
+    private void init() {
+        mFragmentManager = getFragmentManager();
     }
 
     @Override
