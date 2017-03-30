@@ -104,7 +104,6 @@ public class ReadingActivity extends BaseActivity implements OnControllerStatusC
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        showToast("onKeyDown");
         if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
             readPageWidget.nextPage();
             return true;

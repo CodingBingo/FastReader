@@ -198,7 +198,6 @@ public abstract class BaseReadView extends View {
         } else if (status == BookStatus.LOAD_SUCCESS) {
             if (isPrepared) {
                 pagefactory.onDraw(mCurrentPageCanvas);
-//                pagefactory.onDraw(mNextPageCanvas);
                 postInvalidate();
             }
         } else {
@@ -215,7 +214,6 @@ public abstract class BaseReadView extends View {
         } else if (status == BookStatus.LOAD_SUCCESS) {
             if (isPrepared) {
                 pagefactory.onDraw(mCurrentPageCanvas);
-                pagefactory.onDraw(mNextPageCanvas);
                 postInvalidate();
             }
         } else {
