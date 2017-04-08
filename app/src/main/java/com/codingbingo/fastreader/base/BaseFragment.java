@@ -3,6 +3,7 @@ package com.codingbingo.fastreader.base;
 import android.app.Fragment;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.avos.avoscloud.AVAnalytics;
 import com.codingbingo.fastreader.FRApplication;
@@ -54,5 +55,9 @@ public abstract class BaseFragment extends Fragment {
      */
     protected DaoSession getDaoSession(){
         return ((FRApplication) getActivity().getApplication()).getDaoSession();
+    }
+
+    protected void showToast(String content){
+        Toast.makeText(getActivity(), content, Toast.LENGTH_SHORT).show();
     }
 }

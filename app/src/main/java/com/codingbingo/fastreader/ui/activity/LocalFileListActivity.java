@@ -15,6 +15,8 @@ import com.codingbingo.fastreader.model.LocalFile;
 import com.codingbingo.fastreader.ui.adapter.FileListAdapter;
 import com.codingbingo.fastreader.utils.FileUtils;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.util.List;
 
 /**

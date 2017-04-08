@@ -14,10 +14,13 @@ import com.codingbingo.fastreader.dao.Chapter;
 import com.codingbingo.fastreader.dao.ChapterDao;
 import com.codingbingo.fastreader.dao.DaoSession;
 import com.codingbingo.fastreader.manager.SettingManager;
+import com.codingbingo.fastreader.model.eventbus.RefreshBookListEvent;
 import com.codingbingo.fastreader.utils.FileUtils;
 import com.codingbingo.fastreader.utils.ScreenUtils;
 import com.codingbingo.fastreader.utils.StringUtils;
 import com.codingbingo.fastreader.utils.ThreadPool;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.IOException;
@@ -177,7 +180,6 @@ public class PageFactory {
                 try {
                     mMappedByteBuffer = new RandomAccessFile(bookFile, "r").getChannel().map(FileChannel.MapMode.READ_ONLY, 0, mByteBufferLength);
                     //此处应该根据整个页面的情况计算当前页面能显示多少字符
-
 
                 } catch (IOException e) {
                     //基本没可能了，上面已经确保了文件存在
@@ -399,6 +401,9 @@ public class PageFactory {
 
             mBook.setProcessStatus(Constants.BOOK_PROCESSED);
             mBookDao.update(mBook);
+
+            //本次书籍处理完毕
+            EventBus.getDefault().post(new RefreshBookListEvent());
         }
     }
 

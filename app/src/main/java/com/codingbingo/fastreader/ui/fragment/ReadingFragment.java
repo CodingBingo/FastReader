@@ -9,8 +9,6 @@ import android.view.ViewGroup;
 import com.codingbingo.fastreader.R;
 import com.codingbingo.fastreader.base.BaseActivity;
 import com.codingbingo.fastreader.base.BaseFragment;
-import com.codingbingo.fastreader.ui.activity.LocalFileListActivity;
-import com.codingbingo.fastreader.utils.StringUtils;
 import com.codingbingo.fastreader.view.readview.PageWidget;
 import com.codingbingo.fastreader.view.readview.ReadController;
 import com.codingbingo.fastreader.view.readview.interfaces.OnControllerStatusChangeListener;

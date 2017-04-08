@@ -17,13 +17,17 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.codingbingo.fastreader.Constants;
-import com.codingbingo.fastreader.FRApplication;
 import com.codingbingo.fastreader.R;
 import com.codingbingo.fastreader.base.BaseActivity;
 import com.codingbingo.fastreader.dao.Book;
 import com.codingbingo.fastreader.dao.BookDao;
+import com.codingbingo.fastreader.model.eventbus.RefreshBookListEvent;
 import com.codingbingo.fastreader.ui.adapter.BookListAdapter;
 import com.codingbingo.fastreader.utils.ScreenUtils;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.List;
 
@@ -52,6 +56,7 @@ public class MainActivity extends BaseActivity implements
     private LinearLayout about;
     private LinearLayout feedback;
 
+    private BookListAdapter bookListAdapter;
     private List<Book> bookList;
 
     private BookDao mBookDao;
@@ -63,6 +68,22 @@ public class MainActivity extends BaseActivity implements
 
         init();
         initView();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (EventBus.getDefault().isRegistered(this) == false) {
+            EventBus.getDefault().register(this);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (EventBus.getDefault().isRegistered(this) == true) {
+            EventBus.getDefault().unregister(this);
+        }
     }
 
     private void init() {
@@ -91,7 +112,7 @@ public class MainActivity extends BaseActivity implements
         menuPopupWindow.setBackgroundDrawable(new ColorDrawable(Color.argb(200, 81, 86, 88)));
         menuPopupWindow.setAnimationStyle(R.style.PopupAnimation);
 
-        BookListAdapter bookListAdapter = new BookListAdapter(this, bookList);
+        bookListAdapter = new BookListAdapter(this, bookList);
         //图书列表点击事件
         bookListAdapter.setOnBookListItemClickListener(this);
         bookListView.setLayoutManager(new GridLayoutManager(this, 3));
@@ -189,5 +210,14 @@ public class MainActivity extends BaseActivity implements
     @Override
     public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
         changeTitleBarLayout(scrollY);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(RefreshBookListEvent refreshBookListEvent){
+        bookList.clear();
+
+        bookList.addAll(mBookDao.loadAll());
+
+        bookListAdapter.notifyDataSetChanged();
     }
 }
