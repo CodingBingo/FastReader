@@ -10,8 +10,12 @@ import android.view.WindowManager;
 import com.codingbingo.fastreader.Constants;
 import com.codingbingo.fastreader.R;
 import com.codingbingo.fastreader.base.BaseActivity;
+import com.codingbingo.fastreader.dao.Book;
+import com.codingbingo.fastreader.dao.BookDao;
 import com.codingbingo.fastreader.ui.fragment.ChapterListFragment;
 import com.codingbingo.fastreader.ui.fragment.ReadingFragment;
+
+import java.util.List;
 
 
 /**
@@ -21,12 +25,10 @@ import com.codingbingo.fastreader.ui.fragment.ReadingFragment;
  */
 
 public class ReadingActivity extends BaseActivity implements View.OnClickListener {
-
     private ChapterListFragment mChapterListFragment;
     private ReadingFragment mReadingFragment;
 
-
-    private long bookId;
+    private long bookId = NO_BOOK_ID;
     private String bookPath;
 
     @Override
@@ -59,13 +61,16 @@ public class ReadingActivity extends BaseActivity implements View.OnClickListene
                 break;
             case Constants.TYPE_FROM_LOCAL_FILE_ACTIVITY:
                 bookPath = intent.getStringExtra("bookPath");
-                break;
+                //防止用户再从文件列表页点击进入
+                List<Book> bookList = getDaoSession().getBookDao().queryBuilder().where(BookDao.Properties.BookPath.eq(bookPath)).list();
+                if (bookList.size() != 0) {
+                    bookId = bookList.get(0).getId();
+                    break;
+                }
         }
     }
 
     private void initView() {
-
-
         mReadingFragment = new ReadingFragment();
         mReadingFragment.setBookId(bookId);
         mReadingFragment.setBookPath(bookPath);
@@ -101,7 +106,7 @@ public class ReadingActivity extends BaseActivity implements View.OnClickListene
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (mReadingFragment.isHidden() == false){
+        if (mReadingFragment.isHidden() == false) {
             if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
                 mReadingFragment.nextPage();
                 return true;
@@ -111,7 +116,7 @@ public class ReadingActivity extends BaseActivity implements View.OnClickListene
             }
         }
 
-        if (keyCode == KeyEvent.KEYCODE_BACK && mReadingFragment.isVisible() == false){
+        if (keyCode == KeyEvent.KEYCODE_BACK && mReadingFragment.isVisible() == false) {
             getFragmentManager()
                     .beginTransaction()
                     .replace(R.id.reading_container, mReadingFragment)

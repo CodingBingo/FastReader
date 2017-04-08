@@ -7,7 +7,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.codingbingo.fastreader.R;
+import com.codingbingo.fastreader.base.BaseActivity;
 import com.codingbingo.fastreader.base.BaseFragment;
+import com.codingbingo.fastreader.ui.activity.LocalFileListActivity;
 import com.codingbingo.fastreader.utils.StringUtils;
 import com.codingbingo.fastreader.view.readview.PageWidget;
 import com.codingbingo.fastreader.view.readview.ReadController;
@@ -63,7 +65,8 @@ public class ReadingFragment extends BaseFragment implements OnControllerStatusC
         }
 
         readPageWidget = (PageWidget) view.findViewById(R.id.readPageWidget);
-        if (StringUtils.isBlank(bookPath)) {
+        //bookId判断书籍状态种类
+        if (BaseActivity.NO_BOOK_ID != bookId) {
             readPageWidget.setBookId(bookId);
         } else {
             readPageWidget.setBookPath(bookPath);

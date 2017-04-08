@@ -34,7 +34,7 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile 'com.android.support:appcompat-v7:23.4.0'
-    compile 'com.android.support:design:23.2.0'
+    compile 'com.android.support:design:23.4.0'
     testCompile 'junit:junit:4.12'
 
     // LeanCloud 基础包
@@ -44,6 +44,7 @@ dependencies {
     // 推送与实时聊天需要的包
     compile('cn.leancloud.android:avoscloud-push:v3.+@aar') { transitive = true }
 
-
+    compile 'org.greenrobot:eventbus:3.0.0'
+    //发布到线上的时候删除
     compile 'com.facebook.stetho:stetho:1.4.2'
 }
