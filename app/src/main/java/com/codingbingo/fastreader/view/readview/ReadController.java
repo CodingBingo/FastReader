@@ -101,12 +101,15 @@ public class ReadController extends FrameLayout implements View.OnTouchListener,
         bottomInAnimation = AnimationUtils.loadAnimation(mContext, R.anim.bottom_in_animation);
         bottomOutAnimation = AnimationUtils.loadAnimation(mContext, R.anim.bottom_out_animation);
 
-        topInAnimation.setFillAfter(true);
         topOutAnimation.setFillAfter(true);
+        topInAnimation.setFillAfter(true);
         bottomInAnimation.setFillAfter(true);
         bottomOutAnimation.setFillAfter(true);
 
         topOutAnimation.setAnimationListener(this);
+        topInAnimation.setAnimationListener(this);
+        bottomInAnimation.setAnimationListener(this);
+        bottomOutAnimation.setAnimationListener(this);
     }
 
     private void initView() {
@@ -147,6 +150,13 @@ public class ReadController extends FrameLayout implements View.OnTouchListener,
         mBookMode.setOnClickListener(onClickListener);
     }
 
+    private void invalidClickListener(){
+        backBtn.setOnClickListener(null);
+        mBookContents.setOnClickListener(null);
+        mBookFonts.setOnClickListener(null);
+        mBookMode.setOnClickListener(null);
+    }
+
     @Override
     public void onAnimationStart(Animation animation) {
 
@@ -156,6 +166,12 @@ public class ReadController extends FrameLayout implements View.OnTouchListener,
     public void onAnimationEnd(Animation animation) {
         if (onControllerStatusChangeListener != null) {
             onControllerStatusChangeListener.onControllerStatusChange(isShowing);
+        }
+
+        if (isShowing){
+            setOnViewClickListener(onClickListener);
+        } else{
+            invalidClickListener();
         }
     }
 
