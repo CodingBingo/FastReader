@@ -42,6 +42,7 @@
 
     </LinearLayout>
 
+
     <LinearLayout
         android:id="@+id/controllerBottomBar"
         android:layout_width="match_parent"
@@ -179,6 +180,85 @@
             </RelativeLayout>
 
         </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/controllerStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:alpha="0.85"
+        android:background="@color/black"
+        android:orientation="vertical"
+        android:padding="15dp"
+        android:visibility="gone">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize">
+
+            <ImageView
+                android:id="@+id/dark"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentLeft="true"
+                android:padding="5dp"
+                android:src="@drawable/dark" />
+
+            <ImageView
+                android:id="@+id/lighten"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true"
+                android:padding="5dp"
+                android:src="@drawable/lighten" />
+
+            <android.support.v7.widget.AppCompatSeekBar
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/lighten"
+                android:layout_toRightOf="@+id/dark"
+                android:foregroundGravity="center_vertical"
+                android:progress="0"
+                android:progressDrawable="@drawable/custom_progress" />
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="15dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/rectangle_bg"
+                android:gravity="center"
+                android:padding="10dp"
+                android:text="A-"
+                android:textColor="@color/white"
+                android:textSize="15dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/rectangle_bg"
+                android:gravity="center"
+                android:padding="10dp"
+                android:text="A+"
+                android:textColor="@color/white"
+                android:textSize="15dp" />
+
+        </LinearLayout>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/readingBackground"
+            android:layout_width="match_parent"
+            android:layout_height="60dp" />
 
     </LinearLayout>
 

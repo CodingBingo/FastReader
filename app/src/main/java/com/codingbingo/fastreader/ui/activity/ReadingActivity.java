@@ -95,6 +95,7 @@ public class ReadingActivity extends BaseActivity implements View.OnClickListene
                 getFragmentManager()
                         .beginTransaction()
                         .replace(R.id.reading_container, mChapterListFragment)
+                        .addToBackStack(null)
                         .commit();
                 break;
             case R.id.book_fonts:

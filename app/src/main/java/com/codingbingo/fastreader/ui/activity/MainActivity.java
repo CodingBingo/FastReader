@@ -215,9 +215,7 @@ public class MainActivity extends BaseActivity implements
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEvent(RefreshBookListEvent refreshBookListEvent){
         bookList.clear();
-
         bookList.addAll(mBookDao.loadAll());
-
         bookListAdapter.notifyDataSetChanged();
     }
 }
