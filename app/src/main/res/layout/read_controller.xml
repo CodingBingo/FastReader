@@ -24,15 +24,16 @@
 
             <ImageView
                 android:id="@+id/backBtn"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
                 android:layout_centerVertical="true"
-                android:layout_marginTop="25dp"
+                android:padding="7dp"
                 android:src="@drawable/arrow_left_white" />
 
             <ImageView
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:padding="7dp"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
                 android:src="@drawable/more" />
@@ -214,6 +215,7 @@
                 android:src="@drawable/lighten" />
 
             <android.support.v7.widget.AppCompatSeekBar
+                android:id="@+id/brightness"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
@@ -232,6 +234,7 @@
             android:orientation="horizontal">
 
             <TextView
+                android:id="@+id/fontSizeSmaller"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -243,6 +246,7 @@
                 android:textSize="15dp" />
 
             <TextView
+                android:id="@+id/fontSizeLarger"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
