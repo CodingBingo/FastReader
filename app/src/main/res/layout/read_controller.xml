@@ -8,8 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:alpha="0.85"
-        android:background="@color/black"
+        android:background="@color/controller_bg"
         android:orientation="vertical">
 
         <View
@@ -49,8 +48,7 @@
         android:layout_width="match_parent"
         android:layout_height="130dp"
         android:layout_alignParentBottom="true"
-        android:alpha="0.85"
-        android:background="@color/black"
+        android:background="@color/controller_bg"
         android:orientation="vertical">
 
         <RelativeLayout
@@ -188,8 +186,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:alpha="0.85"
-        android:background="@color/black"
+        android:background="@color/controller_bg"
         android:orientation="vertical"
         android:padding="15dp"
         android:visibility="gone">

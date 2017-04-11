@@ -10,4 +10,7 @@
 
     <color name="default_book_bg">#75DBCD</color>
     <color name="chapter_title_color">#B5B2B5</color>
+
+    <color name="controller_bg">#2A2A2A</color>
+    <color name="controller_pressed">#3B3B3B</color>
 </resources>

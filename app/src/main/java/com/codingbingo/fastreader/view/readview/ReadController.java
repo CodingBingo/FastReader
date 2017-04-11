@@ -18,8 +18,11 @@ import android.widget.TextView;
 
 import com.codingbingo.fastreader.R;
 import com.codingbingo.fastreader.manager.SettingManager;
+import com.codingbingo.fastreader.model.eventbus.StyleChangeEvent;
 import com.codingbingo.fastreader.utils.ScreenUtils;
 import com.codingbingo.fastreader.view.readview.interfaces.OnControllerStatusChangeListener;
+
+import org.greenrobot.eventbus.EventBus;
 
 /**
  * Author: bingo
@@ -206,10 +209,16 @@ public class ReadController extends FrameLayout implements View.OnTouchListener,
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.fontSizeSmaller:
-                SettingManager.getInstance().setReadFontSize(currentFontSize - 5);
+                currentFontSize -= 5;
+                SettingManager.getInstance().setReadFontSize(currentFontSize);
+
+                EventBus.getDefault().post(new StyleChangeEvent());
                 break;
             case R.id.fontSizeLarger:
-                SettingManager.getInstance().setReadFontSize(currentFontSize + 5);
+                currentFontSize += 5;
+                SettingManager.getInstance().setReadFontSize(currentFontSize);
+
+                EventBus.getDefault().post(new StyleChangeEvent());
                 break;
             case R.id.book_fonts:
                 currentStatus = CONTROLLER_STYLE;

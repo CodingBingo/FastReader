@@ -15,12 +15,15 @@ import com.codingbingo.fastreader.dao.ChapterDao;
 import com.codingbingo.fastreader.dao.DaoSession;
 import com.codingbingo.fastreader.manager.SettingManager;
 import com.codingbingo.fastreader.model.eventbus.RefreshBookListEvent;
+import com.codingbingo.fastreader.model.eventbus.StyleChangeEvent;
 import com.codingbingo.fastreader.utils.FileUtils;
 import com.codingbingo.fastreader.utils.ScreenUtils;
 import com.codingbingo.fastreader.utils.StringUtils;
 import com.codingbingo.fastreader.utils.ThreadPool;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.io.IOException;
@@ -91,11 +94,11 @@ public class PageFactory {
         mBookDao = mDaoSession.getBookDao();
         mChapterDao = mDaoSession.getChapterDao();
 
-
         init();
     }
 
-    private void init() {
+
+    public void init() {
         mTitleFontSize = ScreenUtils.dp2px(mContext, 17);
         mBottomFontSize = ScreenUtils.dp2px(mContext, 15);
 
@@ -330,6 +333,8 @@ public class PageFactory {
         return lines;
     }
 
+
+
     /**
      * 打开没有处理过的文件
      *
@@ -384,6 +389,35 @@ public class PageFactory {
         return currentChapter > 0 || (currentChapter == 0 && currentStartPosition > 0);
     }
 
+    /**
+     * 根据新的样式刷新页面
+     * @param mCurrentPageCanvas
+     */
+    public void refreshAccordingToStyle(Canvas mCurrentPageCanvas) {
+        tempStartPos = currentStartPosition;
+        currentEndPosition = currentStartPosition;
+        //刷新init中初始化得样式
+        init();
+
+        Chapter chapter = mChapterList.get(currentChapter);
+        if (currentStartPosition == 0 || chapter.getPosition() == currentEndPosition){ //说明是章节的开始
+            //直接读一遍就好
+            mLines.clear();
+            mLines.addAll(pageDown());
+        }else{
+            //这个时候需要从章节开头开始读，然后读到包含当前位置为止
+
+            currentStartPosition = chapter.getPosition();
+            currentEndPosition = currentStartPosition;
+
+            while(!(currentStartPosition <= tempStartPos && currentEndPosition >= tempStartPos)){
+                mLines.clear();
+                mLines.addAll(pageDown());
+            }
+        }
+        onDraw(mCurrentPageCanvas);
+    }
+
     private class OpenBookTask implements Runnable {
         @Override
         public void run() {
@@ -425,7 +459,7 @@ public class PageFactory {
                 Matcher matcher = pattern.matcher(paragraph);
                 if (matcher.find()) {
                     //修正章节错
-                    if (currentPosition - lastPosition > 200 && bytes.length < 50) {
+                    if (((currentPosition - lastPosition > 200) || lastPosition == 0) && bytes.length < 50) {
                         if (mBook != null) {
                             Chapter chapter = new Chapter();
                             chapter.setTitle(matcher.group());

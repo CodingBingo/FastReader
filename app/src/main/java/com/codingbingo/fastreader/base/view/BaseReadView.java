@@ -18,10 +18,15 @@ import com.codingbingo.fastreader.dao.BookDao;
 import com.codingbingo.fastreader.dao.Chapter;
 import com.codingbingo.fastreader.dao.ChapterDao;
 import com.codingbingo.fastreader.dao.DaoSession;
+import com.codingbingo.fastreader.model.eventbus.StyleChangeEvent;
 import com.codingbingo.fastreader.utils.ScreenUtils;
 import com.codingbingo.fastreader.view.readview.BookStatus;
 import com.codingbingo.fastreader.view.readview.PageFactory;
 import com.codingbingo.fastreader.view.readview.interfaces.OnReadStateChangeListener;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.List;
 
@@ -79,6 +84,7 @@ public abstract class BaseReadView extends View {
 
         mScroller = new Scroller(getContext());
         pagefactory = new PageFactory(context);
+
 
         //数据库
         daoSession = ((FRApplication) context.getApplicationContext()).getDaoSession();
@@ -181,6 +187,31 @@ public abstract class BaseReadView extends View {
     protected abstract void calcPoints();
 
     protected abstract void calcCornerXY(float x, float y);
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        //取消订阅事件
+        if (EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
+        }
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        //订阅事件
+        if (EventBus.getDefault().isRegistered(this) == false) {
+            EventBus.getDefault().register(this);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onReceiveStyleChangeEvent(StyleChangeEvent styleChangeEvent){
+        if (pagefactory != null) {
+            pagefactory.refreshAccordingToStyle(mCurrentPageCanvas);
+        }
+    }
 
     /**
      * 显示Toast提示
