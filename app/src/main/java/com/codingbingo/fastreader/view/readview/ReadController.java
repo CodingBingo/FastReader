@@ -17,6 +17,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.codingbingo.fastreader.R;
+import com.codingbingo.fastreader.manager.SettingManager;
 import com.codingbingo.fastreader.utils.ScreenUtils;
 import com.codingbingo.fastreader.view.readview.interfaces.OnControllerStatusChangeListener;
 
@@ -63,6 +64,8 @@ public class ReadController extends FrameLayout implements View.OnTouchListener,
 
     private int statusBarHeight;
 
+    private int currentFontSize;
+
     public ReadController(Context context) {
         this(context, null, 0);
     }
@@ -77,6 +80,7 @@ public class ReadController extends FrameLayout implements View.OnTouchListener,
 
         //获取对应的高度
         statusBarHeight = ScreenUtils.getStatusBarHeight(context);
+        currentFontSize = SettingManager.getInstance().getReadFontSize();
 
         init();
         initView();
@@ -150,8 +154,14 @@ public class ReadController extends FrameLayout implements View.OnTouchListener,
         fontSizeLarger = (TextView) findViewById(R.id.fontSizeLarger);
         readingBackground = (RecyclerView) findViewById(R.id.readingBackground);
 
+        initViewListener();
         //开始进来之后就要隐藏控制栏
         hideController();
+    }
+
+    private void initViewListener() {
+        fontSizeSmaller.setOnClickListener(this);
+        fontSizeLarger.setOnClickListener(this);
     }
 
     private void hideController() {
@@ -194,9 +204,20 @@ public class ReadController extends FrameLayout implements View.OnTouchListener,
 
     @Override
     public void onClick(View v) {
-        currentStatus = CONTROLLER_STYLE;
-        hideController();
-        controllerStyle.setVisibility(VISIBLE);
+        switch (v.getId()){
+            case R.id.fontSizeSmaller:
+                SettingManager.getInstance().setReadFontSize(currentFontSize - 5);
+                break;
+            case R.id.fontSizeLarger:
+                SettingManager.getInstance().setReadFontSize(currentFontSize + 5);
+                break;
+            case R.id.book_fonts:
+                currentStatus = CONTROLLER_STYLE;
+                hideController();
+                controllerStyle.setVisibility(VISIBLE);
+                break;
+        }
+
     }
 
     @Override
