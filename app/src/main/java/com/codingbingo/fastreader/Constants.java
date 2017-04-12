@@ -13,6 +13,10 @@ public class Constants {
     public static final int TYPE_FROM_MAIN_ACTIVITY = 1;
     public static final int TYPE_FROM_LOCAL_FILE_ACTIVITY = 2;
 
+    public static final int STYLE_MAX_FONT_SIZE = 95;
+    public static final int STYLE_MIN_FONT_SIZE = 40;
+    public static final int STYLE_NORMAL_FONT_SIZE = 50;
+
     /**
      * 只是插入数据，未做任何处理
      */

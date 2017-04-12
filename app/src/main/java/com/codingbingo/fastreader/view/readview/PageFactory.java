@@ -254,14 +254,20 @@ public class PageFactory {
                 Log.e(TAG, e.getMessage());
             }
 
-            paragraphStr = paragraphStr.replaceAll("\r\n", "  ").replaceAll("\n", " "); // 段落中的换行符去掉，绘制的时候再换行
+            paragraphStr = paragraphStr.replaceAll("\r", " ").replaceAll("\n", " "); // 段落中的换行符去掉，绘制的时候再换行
+            if (paragraphStr.replaceAll(" ", "").length() == 0){
+                //说明当前段落无内容
+                continue;
+            }
             while (paragraphStr.length() > 0) {
                 int paintSize = mPaint.breakText(paragraphStr, true, mVisibleWidth, null);
                 paragraphLines.add(paragraphStr.substring(0, paintSize));
                 paragraphStr = paragraphStr.substring(paintSize);
             }
-
-            lines.addAll(0, paragraphLines);
+            if (paragraphLines.size() > 0) {
+                paragraphLines.set(paragraphLines.size() - 1, paragraphLines.get(paragraphLines.size() - 1) + "@");
+                lines.addAll(0, paragraphLines);
+            }
 
             while (lines.size() > mLineCount) { // 4.如果段落添加完，但是超出一页，则超出部分需删减
                 try {
@@ -304,7 +310,11 @@ public class PageFactory {
             } catch (Exception e) {
                 Log.e(TAG, e.getLocalizedMessage());
             }
-            paragraphStr = paragraphStr.replaceAll("\r\n", "  ").replaceAll("\n", " "); // 段落中的换行符去掉，绘制的时候再换行
+            paragraphStr = paragraphStr.replaceAll("\r", " ").replaceAll("\n", " "); // 段落中的换行符去掉，绘制的时候再换行
+            if (paragraphStr.replaceAll(" ", "").length() == 0){
+                //说明当前段落无内容
+                continue;
+            }
             while (paragraphStr.length() > 0) {
                 int paintSize = mPaint.breakText(paragraphStr, true, mVisibleWidth, null);
                 lines.add(paragraphStr.substring(0, paintSize));
@@ -315,6 +325,7 @@ public class PageFactory {
             }
 
             lines.set(lines.size() - 1, lines.get(lines.size() - 1) + "@");
+
             if (paragraphStr.length() != 0) {
                 try {
                     currentEndPosition -= paragraphStr.getBytes(charSet).length;

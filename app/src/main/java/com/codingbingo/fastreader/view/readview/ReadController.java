@@ -1,7 +1,6 @@
 package com.codingbingo.fastreader.view.readview;
 
 import android.content.Context;
-import android.support.v7.widget.AppCompatSeekBar;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -17,6 +16,7 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.codingbingo.fastreader.Constants;
 import com.codingbingo.fastreader.R;
 import com.codingbingo.fastreader.manager.SettingManager;
 import com.codingbingo.fastreader.model.eventbus.StyleChangeEvent;
@@ -36,7 +36,7 @@ public class ReadController extends FrameLayout implements
         View.OnTouchListener,
         Animation.AnimationListener,
         View.OnClickListener,
-        SeekBar.OnSeekBarChangeListener{
+        SeekBar.OnSeekBarChangeListener {
     public static final int CONTROLLER_HIDE = 0;
     public static final int CONTROLLER_SHOW = 1;
     public static final int CONTROLLER_STYLE = -1;
@@ -57,7 +57,7 @@ public class ReadController extends FrameLayout implements
     private ImageView backBtn;
 
     //阅读亮度
-    private SwitchableSeekBar brightness;
+    private SwitchableSeekBar mBrightness;
     //文字大小
     private TextView fontSizeSmaller, fontSizeLarger;
     //阅读背景
@@ -112,7 +112,7 @@ public class ReadController extends FrameLayout implements
         } else if (currentStatus == CONTROLLER_HIDE) {
             showController();
             currentStatus = CONTROLLER_SHOW;
-        } else if (currentStatus == CONTROLLER_STYLE){
+        } else if (currentStatus == CONTROLLER_STYLE) {
             //此时页面显示的页面样式的几个选项
             hideControllerStyle();
             currentStatus = CONTROLLER_HIDE;
@@ -160,10 +160,13 @@ public class ReadController extends FrameLayout implements
         mBookMode = (RelativeLayout) findViewById(R.id.book_mode);
         mReadProgress = (SwitchableSeekBar) findViewById(R.id.read_progress);
 
-        brightness = (SwitchableSeekBar) findViewById(R.id.brightness);
+        mBrightness = (SwitchableSeekBar) findViewById(R.id.brightness);
         fontSizeSmaller = (TextView) findViewById(R.id.fontSizeSmaller);
         fontSizeLarger = (TextView) findViewById(R.id.fontSizeLarger);
         readingBackground = (RecyclerView) findViewById(R.id.readingBackground);
+
+        mReadProgress.setEnable(false);
+        mBrightness.setEnable(true);
 
         initViewListener();
         //开始进来之后就要隐藏控制栏
@@ -173,6 +176,9 @@ public class ReadController extends FrameLayout implements
     private void initViewListener() {
         fontSizeSmaller.setOnClickListener(this);
         fontSizeLarger.setOnClickListener(this);
+
+        mReadProgress.setOnSeekBarChangeListener(this);
+        mBrightness.setOnSeekBarChangeListener(this);
     }
 
     private void hideController() {
@@ -196,16 +202,20 @@ public class ReadController extends FrameLayout implements
         mBookContents.setOnClickListener(onClickListener);
         mBookFonts.setOnClickListener(this);
         mBookMode.setOnClickListener(onClickListener);
+
+        mReadProgress.setVisibility(VISIBLE);
     }
 
-    private void invalidClickListener(){
+    private void invalidClickListener() {
         backBtn.setOnClickListener(null);
         mBookContents.setOnClickListener(null);
         mBookFonts.setOnClickListener(null);
         mBookMode.setOnClickListener(null);
+
+        mReadProgress.setVisibility(GONE);
     }
 
-    private void hideControllerStyle(){
+    private void hideControllerStyle() {
         controllerStyle.setVisibility(GONE);
 
         if (onControllerStatusChangeListener != null) {
@@ -215,18 +225,22 @@ public class ReadController extends FrameLayout implements
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.fontSizeSmaller:
-                currentFontSize -= 5;
-                SettingManager.getInstance().setReadFontSize(currentFontSize);
+                if (currentFontSize > Constants.STYLE_MIN_FONT_SIZE) {
+                    currentFontSize -= 5;
+                    SettingManager.getInstance().setReadFontSize(currentFontSize);
 
-                EventBus.getDefault().post(new StyleChangeEvent());
+                    EventBus.getDefault().post(new StyleChangeEvent());
+                }
                 break;
             case R.id.fontSizeLarger:
-                currentFontSize += 5;
-                SettingManager.getInstance().setReadFontSize(currentFontSize);
+                if (currentFontSize < Constants.STYLE_MAX_FONT_SIZE) {
+                    currentFontSize += 5;
+                    SettingManager.getInstance().setReadFontSize(currentFontSize);
 
-                EventBus.getDefault().post(new StyleChangeEvent());
+                    EventBus.getDefault().post(new StyleChangeEvent());
+                }
                 break;
             case R.id.book_fonts:
                 currentStatus = CONTROLLER_STYLE;
@@ -249,9 +263,9 @@ public class ReadController extends FrameLayout implements
                     ((currentStatus == CONTROLLER_SHOW) || (currentStatus == CONTROLLER_STYLE)) ? true : false);
         }
 
-        if (currentStatus == CONTROLLER_SHOW){
+        if (currentStatus == CONTROLLER_SHOW) {
             setOnViewClickListener(onClickListener);
-        } else{
+        } else {
             invalidClickListener();
         }
     }
@@ -263,7 +277,7 @@ public class ReadController extends FrameLayout implements
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        switch (seekBar.getId()){
+        switch (seekBar.getId()) {
             case R.id.read_progress:
                 //阅读进度，只有在所有的章节都load完成之后才能可用
                 break;

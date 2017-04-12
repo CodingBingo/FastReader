@@ -1,5 +1,6 @@
 package com.codingbingo.fastreader.manager;
 
+import com.codingbingo.fastreader.Constants;
 import com.codingbingo.fastreader.utils.SharedPreferenceUtils;
 
 /**
@@ -26,7 +27,7 @@ public class SettingManager {
     }
 
     public int getReadFontSize(){
-        return instance.sharedPreferenceUtils.getInt("fontSize", 45);
+        return instance.sharedPreferenceUtils.getInt("fontSize", Constants.STYLE_NORMAL_FONT_SIZE);
     }
 
     public void setReadFontSize(int fontSize){
