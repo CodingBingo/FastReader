@@ -15,15 +15,12 @@ import com.codingbingo.fastreader.dao.ChapterDao;
 import com.codingbingo.fastreader.dao.DaoSession;
 import com.codingbingo.fastreader.manager.SettingManager;
 import com.codingbingo.fastreader.model.eventbus.RefreshBookListEvent;
-import com.codingbingo.fastreader.model.eventbus.StyleChangeEvent;
 import com.codingbingo.fastreader.utils.FileUtils;
 import com.codingbingo.fastreader.utils.ScreenUtils;
 import com.codingbingo.fastreader.utils.StringUtils;
 import com.codingbingo.fastreader.utils.ThreadPool;
 
 import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.io.IOException;
@@ -288,7 +285,7 @@ public class PageFactory {
         int paraSpace = 0;
         //下一章节
         Chapter nextChapter = null;
-        if (currentChapter < mChapterList.size() - 1){
+        if (currentChapter < mChapterList.size() - 1) {
             nextChapter = mChapterList.get(currentChapter + 1);
         }
 
@@ -297,7 +294,7 @@ public class PageFactory {
             byte[] paragraphBuffer = readParagraphForward(currentEndPosition);
             currentEndPosition += paragraphBuffer.length;
 
-            if (nextChapter != null && currentEndPosition >= nextChapter.getPosition()){
+            if (nextChapter != null && currentEndPosition >= nextChapter.getPosition()) {
                 //已经到下一个章节了
                 currentEndPosition = nextChapter.getPosition();
                 return lines;
@@ -332,7 +329,6 @@ public class PageFactory {
 
         return lines;
     }
-
 
 
     /**
@@ -391,6 +387,7 @@ public class PageFactory {
 
     /**
      * 根据新的样式刷新页面
+     *
      * @param mCurrentPageCanvas
      */
     public void refreshAccordingToStyle(Canvas mCurrentPageCanvas) {
@@ -400,17 +397,17 @@ public class PageFactory {
         init();
 
         Chapter chapter = mChapterList.get(currentChapter);
-        if (currentStartPosition == 0 || chapter.getPosition() == currentEndPosition){ //说明是章节的开始
+        if (currentStartPosition == 0 || chapter.getPosition() == currentEndPosition) { //说明是章节的开始
             //直接读一遍就好
             mLines.clear();
             mLines.addAll(pageDown());
-        }else{
+        } else {
             //这个时候需要从章节开头开始读，然后读到包含当前位置为止
 
             currentStartPosition = chapter.getPosition();
             currentEndPosition = currentStartPosition;
 
-            while(!(currentStartPosition <= tempStartPos && currentEndPosition >= tempStartPos)){
+            while (!(currentStartPosition <= tempStartPos && currentEndPosition >= tempStartPos)) {
                 mLines.clear();
                 mLines.addAll(pageDown());
             }
@@ -459,13 +456,13 @@ public class PageFactory {
                 Matcher matcher = pattern.matcher(paragraph);
                 if (matcher.find()) {
                     //修正章节错
-                    if (((currentPosition - lastPosition > 200) || lastPosition == 0) && bytes.length < 50) {
+                    if (currentPosition - lastPosition > 200 && bytes.length < 50) {
                         if (mBook != null) {
                             Chapter chapter = new Chapter();
                             chapter.setTitle(matcher.group());
-                            if(lastPosition == 0) {
+                            if (lastPosition == 0) {
                                 chapter.setPosition(0);
-                            }else{
+                            } else {
                                 chapter.setPosition(currentPosition);
                             }
                             chapter.setIsRead(false);
@@ -547,8 +544,8 @@ public class PageFactory {
             currentStartPosition = currentEndPosition;
 
             Chapter nextChapter = mChapterList.get(currentChapter + 1);
-            if (currentEndPosition == nextChapter.getPosition()){
-                currentChapter ++;
+            if (currentEndPosition == nextChapter.getPosition()) {
+                currentChapter++;
             }
 
             mLines.clear();
@@ -574,14 +571,14 @@ public class PageFactory {
             Chapter chapter = mChapterList.get(currentChapter);
             if (chapter.getPosition() >= currentStartPosition) {
                 //说明这是一章的开头，上一页就要到上一个章节了，这里要直接对上一章节的部分分页
-                currentChapter --;
+                currentChapter--;
 
                 Chapter preChapter = mChapterList.get(currentChapter);
                 //上一章节开始的地方
                 currentStartPosition = preChapter.getPosition();
                 currentEndPosition = currentStartPosition;
 
-                while(currentEndPosition != chapter.getPosition()){
+                while (currentEndPosition != chapter.getPosition()) {
 
                     currentStartPosition = currentEndPosition;//调整开始位置
 

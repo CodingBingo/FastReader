@@ -14,12 +14,14 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.codingbingo.fastreader.R;
 import com.codingbingo.fastreader.manager.SettingManager;
 import com.codingbingo.fastreader.model.eventbus.StyleChangeEvent;
 import com.codingbingo.fastreader.utils.ScreenUtils;
+import com.codingbingo.fastreader.view.SwitchableSeekBar;
 import com.codingbingo.fastreader.view.readview.interfaces.OnControllerStatusChangeListener;
 
 import org.greenrobot.eventbus.EventBus;
@@ -30,7 +32,11 @@ import org.greenrobot.eventbus.EventBus;
  * By 2017/1/11.
  */
 
-public class ReadController extends FrameLayout implements View.OnTouchListener, Animation.AnimationListener, View.OnClickListener {
+public class ReadController extends FrameLayout implements
+        View.OnTouchListener,
+        Animation.AnimationListener,
+        View.OnClickListener,
+        SeekBar.OnSeekBarChangeListener{
     public static final int CONTROLLER_HIDE = 0;
     public static final int CONTROLLER_SHOW = 1;
     public static final int CONTROLLER_STYLE = -1;
@@ -46,11 +52,12 @@ public class ReadController extends FrameLayout implements View.OnTouchListener,
     private RelativeLayout mBookMode;
     //书籍样式
     private RelativeLayout mBookFonts;
-
+    //阅读进度
+    private SwitchableSeekBar mReadProgress;
     private ImageView backBtn;
 
     //阅读亮度
-    private AppCompatSeekBar brightness;
+    private SwitchableSeekBar brightness;
     //文字大小
     private TextView fontSizeSmaller, fontSizeLarger;
     //阅读背景
@@ -151,8 +158,9 @@ public class ReadController extends FrameLayout implements View.OnTouchListener,
         mBookFonts = (RelativeLayout) findViewById(R.id.book_fonts);
         mBookContents = (RelativeLayout) findViewById(R.id.book_contents);
         mBookMode = (RelativeLayout) findViewById(R.id.book_mode);
+        mReadProgress = (SwitchableSeekBar) findViewById(R.id.read_progress);
 
-        brightness = (AppCompatSeekBar) findViewById(R.id.brightness);
+        brightness = (SwitchableSeekBar) findViewById(R.id.brightness);
         fontSizeSmaller = (TextView) findViewById(R.id.fontSizeSmaller);
         fontSizeLarger = (TextView) findViewById(R.id.fontSizeLarger);
         readingBackground = (RecyclerView) findViewById(R.id.readingBackground);
@@ -250,6 +258,28 @@ public class ReadController extends FrameLayout implements View.OnTouchListener,
 
     @Override
     public void onAnimationRepeat(Animation animation) {
+
+    }
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        switch (seekBar.getId()){
+            case R.id.read_progress:
+                //阅读进度，只有在所有的章节都load完成之后才能可用
+                break;
+            case R.id.brightness:
+                //阅读亮度
+                break;
+        }
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
 
     }
 }

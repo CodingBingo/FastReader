@@ -54,6 +54,7 @@ public abstract class BaseReadView extends View {
     protected Book book;
     protected boolean isPrepared = true;
 
+    private Toast toast;
     protected Scroller mScroller;
 
     protected DaoSession daoSession;
@@ -210,6 +211,7 @@ public abstract class BaseReadView extends View {
     public void onReceiveStyleChangeEvent(StyleChangeEvent styleChangeEvent){
         if (pagefactory != null) {
             pagefactory.refreshAccordingToStyle(mCurrentPageCanvas);
+            invalidate();
         }
     }
 
@@ -218,7 +220,12 @@ public abstract class BaseReadView extends View {
      * @param content
      */
     protected void showToast(String content){
-        Toast.makeText(mContext, content, Toast.LENGTH_SHORT).show();
+        if (toast == null) {
+            toast = Toast.makeText(mContext, content, Toast.LENGTH_SHORT);
+        }else {
+            toast.setText(content);
+        }
+        toast.show();
     }
 
     public void nextPage() {

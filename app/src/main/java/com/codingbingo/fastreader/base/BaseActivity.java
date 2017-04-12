@@ -16,9 +16,11 @@ import com.codingbingo.fastreader.dao.DaoSession;
  * Created by bingo on 2016/12/23.
  */
 
-public class BaseActivity extends AppCompatActivity{
+public class BaseActivity extends AppCompatActivity {
     public static final int NO_BOOK_ID = -1;
     protected FragmentManager mFragmentManager;
+
+    private Toast toast;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -65,28 +67,36 @@ public class BaseActivity extends AppCompatActivity{
 
     /**
      * 获取数据库session
+     *
      * @return
      */
-    protected DaoSession getDaoSession(){
+    protected DaoSession getDaoSession() {
         return ((FRApplication) getApplication()).getDaoSession();
     }
 
-    protected void showToast(String content){
-        Toast.makeText(this, content, Toast.LENGTH_SHORT).show();
+    protected void showToast(String content) {
+        if (toast == null) {
+            toast = Toast.makeText(this, content, Toast.LENGTH_SHORT);
+        } else {
+            toast.setText(content);
+        }
+
+        toast.show();
     }
 
     /**
      * 显示加载动画
+     *
      * @param message
      */
-    protected void showLoadingDialog(String message){
+    protected void showLoadingDialog(String message) {
 
     }
 
     /**
      * 关闭加载动画
      */
-    protected void dismissLoadingDialog(){
+    protected void dismissLoadingDialog() {
 
     }
 }

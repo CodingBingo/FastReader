@@ -71,16 +71,17 @@
                 android:padding="5dp"
                 android:src="@drawable/arrow_right_white" />
 
-            <android.support.v7.widget.AppCompatSeekBar
-                android:id="@+id/player_progress"
+            <com.codingbingo.fastreader.view.SwitchableSeekBar
+                android:id="@+id/read_progress"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
                 android:layout_toLeftOf="@+id/next_chapter"
                 android:layout_toRightOf="@+id/pre_chapter"
                 android:foregroundGravity="center_vertical"
-                android:progress="0"
-                android:progressDrawable="@drawable/custom_progress" />
+                android:progress="0" />
 
         </RelativeLayout>
 
@@ -211,16 +212,17 @@
                 android:padding="5dp"
                 android:src="@drawable/lighten" />
 
-            <android.support.v7.widget.AppCompatSeekBar
+            <com.codingbingo.fastreader.view.SwitchableSeekBar
                 android:id="@+id/brightness"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
                 android:layout_toLeftOf="@+id/lighten"
                 android:layout_toRightOf="@+id/dark"
                 android:foregroundGravity="center_vertical"
-                android:progress="0"
-                android:progressDrawable="@drawable/custom_progress" />
+                android:progress="0"/>
 
         </RelativeLayout>
 

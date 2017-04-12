@@ -15,6 +15,8 @@ import com.codingbingo.fastreader.dao.DaoSession;
 
 public abstract class BaseFragment extends Fragment {
 
+    private Toast toast;
+
     public abstract String getFragmentName();
 
     @Override
@@ -31,7 +33,7 @@ public abstract class BaseFragment extends Fragment {
         AVAnalytics.onFragmentStart(getFragmentName());
     }
 
-    protected Window getWindow(){
+    protected Window getWindow() {
         return getActivity().getWindow();
     }
 
@@ -51,13 +53,19 @@ public abstract class BaseFragment extends Fragment {
 
     /**
      * 获取数据库session
+     *
      * @return
      */
-    protected DaoSession getDaoSession(){
+    protected DaoSession getDaoSession() {
         return ((FRApplication) getActivity().getApplication()).getDaoSession();
     }
 
-    protected void showToast(String content){
-        Toast.makeText(getActivity(), content, Toast.LENGTH_SHORT).show();
+    protected void showToast(String content) {
+        if (toast == null) {
+            toast = Toast.makeText(getActivity(), content, Toast.LENGTH_SHORT);
+        } else {
+            toast.setText(content);
+        }
+        toast.show();
     }
 }
