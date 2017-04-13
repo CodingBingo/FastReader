@@ -41,7 +41,9 @@ public class ReadController extends FrameLayout implements
     public static final int CONTROLLER_SHOW = 1;
     public static final int CONTROLLER_STYLE = -1;
 
+    private SettingManager settingManager;
     private Context mContext;
+
     private View statusBarBg;
     private LinearLayout controllerTopBar;
     private LinearLayout controllerBottomBar;
@@ -50,6 +52,8 @@ public class ReadController extends FrameLayout implements
     private RelativeLayout mBookContents;
     //阅读模式：黑夜模式、白天
     private RelativeLayout mBookMode;
+    private ImageView mModeImage;//阅读模式标题图片
+    private TextView mModeName;
     //书籍样式
     private RelativeLayout mBookFonts;
     //阅读进度
@@ -87,6 +91,7 @@ public class ReadController extends FrameLayout implements
     public ReadController(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mContext = context;
+        settingManager = SettingManager.getInstance();
 
         //获取对应的高度
         statusBarHeight = ScreenUtils.getStatusBarHeight(context);
@@ -158,6 +163,8 @@ public class ReadController extends FrameLayout implements
         mBookFonts = (RelativeLayout) findViewById(R.id.book_fonts);
         mBookContents = (RelativeLayout) findViewById(R.id.book_contents);
         mBookMode = (RelativeLayout) findViewById(R.id.book_mode);
+        mModeImage = (ImageView) findViewById(R.id.mode_img);
+        mModeName = (TextView) findViewById(R.id.mode_name);
         mReadProgress = (SwitchableSeekBar) findViewById(R.id.read_progress);
 
         mBrightness = (SwitchableSeekBar) findViewById(R.id.brightness);
@@ -165,8 +172,18 @@ public class ReadController extends FrameLayout implements
         fontSizeLarger = (TextView) findViewById(R.id.fontSizeLarger);
         readingBackground = (RecyclerView) findViewById(R.id.readingBackground);
 
+        //设置seekBar是否可以拖动
         mReadProgress.setEnable(false);
         mBrightness.setEnable(true);
+
+        //阅读模式的切换
+        if (settingManager.getReadMode()) {
+            mModeImage.setImageResource(R.drawable.sun);
+            mModeName.setText("日间");
+        } else {
+            mModeImage.setImageResource(R.drawable.moon);
+            mModeName.setText("夜间");
+        }
 
         initViewListener();
         //开始进来之后就要隐藏控制栏
@@ -201,7 +218,7 @@ public class ReadController extends FrameLayout implements
         backBtn.setOnClickListener(onClickListener);
         mBookContents.setOnClickListener(onClickListener);
         mBookFonts.setOnClickListener(this);
-        mBookMode.setOnClickListener(onClickListener);
+        mBookMode.setOnClickListener(this);
 
         mReadProgress.setVisibility(VISIBLE);
     }
@@ -246,6 +263,18 @@ public class ReadController extends FrameLayout implements
                 currentStatus = CONTROLLER_STYLE;
                 hideController();
                 controllerStyle.setVisibility(VISIBLE);
+                break;
+            case R.id.book_mode:
+                boolean nightMode = settingManager.getReadMode();
+                settingManager.setReadMode(!nightMode);
+                if (nightMode) {
+                    mModeImage.setImageResource(R.drawable.moon);
+                    mModeName.setText("夜间");
+                } else {
+                    mModeImage.setImageResource(R.drawable.sun);
+                    mModeName.setText("日间");
+                }
+                EventBus.getDefault().post(new StyleChangeEvent());
                 break;
         }
 

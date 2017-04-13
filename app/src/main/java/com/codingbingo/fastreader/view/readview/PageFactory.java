@@ -44,6 +44,7 @@ public class PageFactory {
     public static final String TAG = "PageFactory";
 
     private Context mContext;
+    private SettingManager settingManager;
 
     //数据库DAO
     private DaoSession mDaoSession;
@@ -84,8 +85,11 @@ public class PageFactory {
 
     private String charSet = "UTF-8";
 
+    private String backgroundColor = "#FFFFFF";
+
     public PageFactory(Context mContext) {
         this.mContext = mContext;
+        settingManager = SettingManager.getInstance();
 
         mDaoSession = ((FRApplication) mContext.getApplicationContext()).getDaoSession();
         mBookDao = mDaoSession.getBookDao();
@@ -114,7 +118,11 @@ public class PageFactory {
 
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setTextSize(mFontSize);
-        mPaint.setColor(Color.BLACK);
+        if (settingManager.getReadMode()) {
+            mPaint.setColor(Color.WHITE);
+        } else{
+            mPaint.setColor(Color.BLACK);
+        }
 
         mTitlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mTitlePaint.setTextSize(mTitleFontSize);
@@ -199,7 +207,11 @@ public class PageFactory {
         if (mLines.size() > 0) {
             int y = marginHeight + mTitleFontSize / 2;
             //绘制背景，后面添加换背景功能
-            canvas.drawColor(Color.WHITE);
+            if (settingManager.getReadMode()) {
+                canvas.drawColor(Color.BLACK);
+            }else{
+                canvas.drawColor(Color.WHITE);
+            }
             //绘制章节名称
             canvas.drawText(mChapterList.get(currentChapter).getTitle(), marginWidth, y, mTitlePaint);
             y += mTitleFontSize;

@@ -12,5 +12,7 @@
     <color name="chapter_title_color">#B5B2B5</color>
 
     <color name="controller_bg">#2A2A2A</color>
+    <color name="controller_night_mode_bg">#161A20</color>
+    <color name="controller_night_mode_text_color">#5A656F</color>
     <color name="controller_pressed">#3B3B3B</color>
 </resources>

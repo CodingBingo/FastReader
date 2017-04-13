@@ -33,4 +33,12 @@ public class SettingManager {
     public void setReadFontSize(int fontSize){
         instance.sharedPreferenceUtils.putInt("fontSize", fontSize);
     }
+
+    public boolean getReadMode(){
+        return instance.sharedPreferenceUtils.getBoolean("nightMode", false);
+    }
+
+    public void setReadMode(boolean value){
+        instance.sharedPreferenceUtils.putBoolean("nightMode", value);
+    }
 }
