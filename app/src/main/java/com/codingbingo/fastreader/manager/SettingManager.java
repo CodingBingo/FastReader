@@ -41,4 +41,12 @@ public class SettingManager {
     public void setReadMode(boolean value){
         instance.sharedPreferenceUtils.putBoolean("nightMode", value);
     }
+
+    public String getReadBackground(){
+        return instance.sharedPreferenceUtils.getString("readBackground", "#FFFFFF");
+    }
+
+    public void setReadBackground(String color){
+        instance.sharedPreferenceUtils.putString("readBackground", color);
+    }
 }

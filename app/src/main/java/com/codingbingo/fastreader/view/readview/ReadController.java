@@ -1,6 +1,7 @@
 package com.codingbingo.fastreader.view.readview;
 
 import android.content.Context;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -20,11 +21,17 @@ import com.codingbingo.fastreader.Constants;
 import com.codingbingo.fastreader.R;
 import com.codingbingo.fastreader.manager.SettingManager;
 import com.codingbingo.fastreader.model.eventbus.StyleChangeEvent;
+import com.codingbingo.fastreader.ui.adapter.ReadingBackgroundAdapter;
 import com.codingbingo.fastreader.utils.ScreenUtils;
 import com.codingbingo.fastreader.view.SwitchableSeekBar;
 import com.codingbingo.fastreader.view.readview.interfaces.OnControllerStatusChangeListener;
 
 import org.greenrobot.eventbus.EventBus;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Author: bingo
@@ -65,7 +72,9 @@ public class ReadController extends FrameLayout implements
     //文字大小
     private TextView fontSizeSmaller, fontSizeLarger;
     //阅读背景
-    private RecyclerView readingBackground;
+    private RecyclerView mReadingBackground;
+    private ReadingBackgroundAdapter mReadingBackgroundAdapter;
+    private List<String> mBackgroundColorList;
 
     private Animation topOutAnimation;
     private Animation topInAnimation;
@@ -170,7 +179,13 @@ public class ReadController extends FrameLayout implements
         mBrightness = (SwitchableSeekBar) findViewById(R.id.brightness);
         fontSizeSmaller = (TextView) findViewById(R.id.fontSizeSmaller);
         fontSizeLarger = (TextView) findViewById(R.id.fontSizeLarger);
-        readingBackground = (RecyclerView) findViewById(R.id.readingBackground);
+
+        mReadingBackground = (RecyclerView) findViewById(R.id.readingBackground);
+        mReadingBackground.setLayoutManager(new LinearLayoutManager(null, LinearLayoutManager.HORIZONTAL, false));
+
+        mBackgroundColorList = new ArrayList(Arrays.asList(getResources().getStringArray(R.array.readBackgroundColorArray)));
+        mReadingBackgroundAdapter = new ReadingBackgroundAdapter(getContext(), mBackgroundColorList);
+        mReadingBackground.setAdapter(mReadingBackgroundAdapter);
 
         //设置seekBar是否可以拖动
         mReadProgress.setEnable(false);

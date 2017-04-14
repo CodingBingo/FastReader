@@ -210,7 +210,7 @@ public class PageFactory {
             if (settingManager.getReadMode()) {
                 canvas.drawColor(Color.BLACK);
             }else{
-                canvas.drawColor(Color.WHITE);
+                canvas.drawColor(Color.parseColor(SettingManager.getInstance().getReadBackground()));
             }
             //绘制章节名称
             canvas.drawText(mChapterList.get(currentChapter).getTitle(), marginWidth, y, mTitlePaint);

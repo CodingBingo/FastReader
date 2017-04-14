@@ -15,4 +15,16 @@
     <color name="controller_night_mode_bg">#161A20</color>
     <color name="controller_night_mode_text_color">#5A656F</color>
     <color name="controller_pressed">#3B3B3B</color>
+
+    <string-array name="readBackgroundColorArray">
+        <item>#DFBF8D</item>
+        <item>#EFE1C5</item>
+        <item>#C6DFC6</item>
+        <item>#EBEBEB</item>
+        <item>#DFC1C1</item>
+        <item>#65717F</item>
+        <item>#4D4C4C</item>
+        <item>#B18C96</item>
+        <item>#6E7F6A</item>
+    </string-array>
 </resources>
