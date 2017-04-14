@@ -20,7 +20,7 @@ import java.util.HashMap;
 
 public class FRApplication extends Application {
 
-
+    private static FRApplication instance;
 
     private HashMap<String, Service> serviceList;
 
@@ -30,11 +30,17 @@ public class FRApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
+        instance = this;
+
         initCloudService();
         initDatabase();
         init();
 
         Stetho.initializeWithDefaults(this);
+    }
+
+    public static FRApplication getInstance(){
+        return instance;
     }
 
     private void init() {

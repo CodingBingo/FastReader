@@ -265,14 +265,14 @@ public class ReadController extends FrameLayout implements
                 controllerStyle.setVisibility(VISIBLE);
                 break;
             case R.id.book_mode:
-                boolean nightMode = settingManager.getReadMode();
-                settingManager.setReadMode(!nightMode);
+                boolean nightMode = !settingManager.getReadMode();
+                settingManager.setReadMode(nightMode);
                 if (nightMode) {
-                    mModeImage.setImageResource(R.drawable.moon);
-                    mModeName.setText("夜间");
-                } else {
                     mModeImage.setImageResource(R.drawable.sun);
                     mModeName.setText("日间");
+                } else {
+                    mModeImage.setImageResource(R.drawable.moon);
+                    mModeName.setText("夜间");
                 }
                 EventBus.getDefault().post(new StyleChangeEvent());
                 break;

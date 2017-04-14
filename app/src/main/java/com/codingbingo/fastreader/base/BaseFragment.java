@@ -57,7 +57,7 @@ public abstract class BaseFragment extends Fragment {
      * @return
      */
     protected DaoSession getDaoSession() {
-        return ((FRApplication) getActivity().getApplication()).getDaoSession();
+        return FRApplication.getInstance().getDaoSession();
     }
 
     protected void showToast(String content) {

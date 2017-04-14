@@ -71,7 +71,7 @@ public class BaseActivity extends AppCompatActivity {
      * @return
      */
     protected DaoSession getDaoSession() {
-        return ((FRApplication) getApplication()).getDaoSession();
+        return FRApplication.getInstance().getDaoSession();
     }
 
     protected void showToast(String content) {

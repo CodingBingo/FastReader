@@ -77,6 +77,7 @@ public class ReadingActivity extends BaseActivity implements View.OnClickListene
         mReadingFragment.setOnClickListener(this);
 
         mChapterListFragment = new ChapterListFragment();
+        mChapterListFragment.setBookId(bookId);
 
         getFragmentManager()
                 .beginTransaction()
