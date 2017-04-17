@@ -79,10 +79,17 @@ public class ReadingActivity extends BaseActivity implements View.OnClickListene
         mChapterListFragment = new ChapterListFragment();
         mChapterListFragment.setBookId(bookId);
 
-        getFragmentManager()
-                .beginTransaction()
-                .replace(R.id.reading_container, mReadingFragment)
-                .commit();
+        if (mReadingFragment.isAdded()){
+            getFragmentManager()
+                    .beginTransaction()
+                    .show(mReadingFragment)
+                    .commitAllowingStateLoss();
+        } else{
+            getFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.reading_container, mReadingFragment)
+                    .commitAllowingStateLoss();
+        }
     }
 
     @Override
@@ -97,11 +104,7 @@ public class ReadingActivity extends BaseActivity implements View.OnClickListene
                         .beginTransaction()
                         .replace(R.id.reading_container, mChapterListFragment)
                         .addToBackStack(null)
-                        .commit();
-                break;
-            case R.id.book_fonts:
-                break;
-            case R.id.book_mode:
+                        .commitAllowingStateLoss();
                 break;
         }
     }
@@ -116,14 +119,6 @@ public class ReadingActivity extends BaseActivity implements View.OnClickListene
                 mReadingFragment.prePage();
                 return true;
             }
-        }
-
-        if (keyCode == KeyEvent.KEYCODE_BACK && mReadingFragment.isVisible() == false) {
-            getFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.reading_container, mReadingFragment)
-                    .commit();
-            return true;
         }
         return super.onKeyDown(keyCode, event);
     }
