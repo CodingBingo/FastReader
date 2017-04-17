@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Scroller;
@@ -15,20 +14,16 @@ import android.widget.Toast;
 import com.codingbingo.fastreader.FRApplication;
 import com.codingbingo.fastreader.dao.Book;
 import com.codingbingo.fastreader.dao.BookDao;
-import com.codingbingo.fastreader.dao.Chapter;
 import com.codingbingo.fastreader.dao.ChapterDao;
 import com.codingbingo.fastreader.dao.DaoSession;
 import com.codingbingo.fastreader.model.eventbus.StyleChangeEvent;
 import com.codingbingo.fastreader.utils.ScreenUtils;
 import com.codingbingo.fastreader.view.readview.BookStatus;
 import com.codingbingo.fastreader.view.readview.PageFactory;
-import com.codingbingo.fastreader.view.readview.interfaces.OnReadStateChangeListener;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
-import java.util.List;
 
 /**
  * Created by bingo on 2017/1/4.
@@ -48,7 +43,6 @@ public abstract class BaseReadView extends View {
     protected Canvas mCurrentPageCanvas, mNextPageCanvas;
     protected PageFactory pagefactory = null;
 
-    protected OnReadStateChangeListener listener;
     protected long bookId;
     protected String bookPath;
     protected Book book;
@@ -97,8 +91,6 @@ public abstract class BaseReadView extends View {
     protected synchronized void init() {
         try {
             book = bookDao.load(bookId);
-            //上次位置
-            long currentPosition = book.getCurrentPosition();
 
             pagefactory.onDraw(mCurrentPageCanvas);
             //主动刷新界面
@@ -119,10 +111,6 @@ public abstract class BaseReadView extends View {
         pagefactory.openBook(bookPath);
 
         init();
-    }
-
-    public void setListener(OnReadStateChangeListener listener) {
-        this.listener = listener;
     }
 
     private int dx, dy;

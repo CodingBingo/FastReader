@@ -15,7 +15,6 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 
 import com.codingbingo.fastreader.base.view.BaseReadView;
-import com.codingbingo.fastreader.view.readview.interfaces.OnReadStateChangeListener;
 
 /**
  * Author: bingo

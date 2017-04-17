@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/read_fragment"
-    android:clickable="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -12,6 +11,11 @@
 
     <com.codingbingo.fastreader.view.readview.ReadController
         android:id="@+id/readController"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <com.codingbingo.fastreader.view.loadingview.CatLoadingView
+        android:id="@+id/loading"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 

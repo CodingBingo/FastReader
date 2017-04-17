@@ -14,6 +14,7 @@ import com.codingbingo.fastreader.dao.Chapter;
 import com.codingbingo.fastreader.dao.ChapterDao;
 import com.codingbingo.fastreader.dao.DaoSession;
 import com.codingbingo.fastreader.manager.SettingManager;
+import com.codingbingo.fastreader.model.eventbus.BookStatusChangeEvent;
 import com.codingbingo.fastreader.model.eventbus.RefreshBookListEvent;
 import com.codingbingo.fastreader.utils.FileUtils;
 import com.codingbingo.fastreader.utils.ScreenUtils;
@@ -63,13 +64,11 @@ public class PageFactory {
     private Paint mBottomPaint;
 
     //上一页或者下一页
-    private int tempChapter;
     private int tempStartPos;
-    private int tempEndPos;
 
     //当前的章节以及位置
     private int totalWidth;
-    private int totleHeight;
+    private int totalHeight;
     private int currentChapter = 0;
     private int currentStartPosition = 0;
     private int currentEndPosition = 0;
@@ -108,10 +107,10 @@ public class PageFactory {
 
 
         totalWidth = ScreenUtils.getScreenWidth(mContext);
-        totleHeight = ScreenUtils.getScreenHeight(mContext);
+        totalHeight = ScreenUtils.getScreenHeight(mContext);
 
         mVisibleWidth = totalWidth - 2 * marginWidth;
-        mVisibleHeight = totleHeight - marginHeight - mTitleFontSize - mBottomFontSize;
+        mVisibleHeight = totalHeight - marginHeight - mTitleFontSize - mBottomFontSize;
 
         mFontSize = SettingManager.getInstance().getReadFontSize();
         mLineSpace = mFontSize / 5 * 2;
@@ -200,7 +199,11 @@ public class PageFactory {
 
     public synchronized void onDraw(Canvas canvas) {
         if (mLines.size() == 0) {
-            currentStartPosition = currentEndPosition;
+            if (currentEndPosition > currentStartPosition) {
+                currentStartPosition = currentEndPosition;
+            } else {
+                currentEndPosition = currentStartPosition;
+            }
             mLines = pageDown();
         }
 
@@ -216,7 +219,7 @@ public class PageFactory {
             canvas.drawText(mChapterList.get(currentChapter).getTitle(), marginWidth, y, mTitlePaint);
             y += mTitleFontSize;
 
-            int bottomPositionY = totleHeight - mBottomFontSize / 2 - mLineSpace;
+            int bottomPositionY = totalHeight - mBottomFontSize / 2 - mLineSpace;
             //绘制内容
             for (String line : mLines) {
                 y += mLineSpace;
@@ -458,6 +461,7 @@ public class PageFactory {
 
             //本次书籍处理完毕
             EventBus.getDefault().post(new RefreshBookListEvent());
+            EventBus.getDefault().post(new BookStatusChangeEvent(Constants.BOOK_PROCESSED, 100, mBook.getId()));
         }
     }
 
@@ -503,6 +507,11 @@ public class PageFactory {
             }
 
             currentPosition += bytes.length;
+
+            BookStatusChangeEvent bookStatusChangeEvent = new BookStatusChangeEvent();
+            bookStatusChangeEvent.setProgress((int)(currentPosition * 100.0 / mByteBufferLength));
+            bookStatusChangeEvent.setStatus(Constants.BOOK_PROCESSING);
+            EventBus.getDefault().post(bookStatusChangeEvent);
         }
     }
 
@@ -561,7 +570,6 @@ public class PageFactory {
         if (!hasNextPage()) { // 最后一章的结束页
             return BookStatus.NO_NEXT_PAGE;
         } else {
-            tempChapter = currentChapter;
             tempStartPos = currentStartPosition;
             //向下移
             currentStartPosition = currentEndPosition;
@@ -573,6 +581,9 @@ public class PageFactory {
 
             mLines.clear();
             mLines.addAll(pageDown());
+
+            //更新书籍
+            updateBookInfo();
         }
         return BookStatus.LOAD_SUCCESS;
     }
@@ -585,9 +596,6 @@ public class PageFactory {
         if (!hasPrePage()) { // 第一章第一页
             return BookStatus.NO_PRE_PAGE;
         } else {
-            // 保存当前页的值
-            tempChapter = currentChapter;
-            tempEndPos = currentEndPosition;
             //向前移动
             currentEndPosition = currentStartPosition;
 
@@ -614,7 +622,19 @@ public class PageFactory {
                 // 起始指针移到上一页开始处
                 mLines.addAll(pageUp()); // 读取一页内容
             }
+
+            //更新书籍
+            updateBookInfo();
         }
         return BookStatus.LOAD_SUCCESS;
+    }
+
+    /**
+     * 当前阅读章节，当前位置
+     */
+    private void updateBookInfo(){
+        mBook.setCurrentChapter(currentChapter);
+        mBook.setCurrentPosition(currentStartPosition);
+        mBookDao.update(mBook);
     }
 }

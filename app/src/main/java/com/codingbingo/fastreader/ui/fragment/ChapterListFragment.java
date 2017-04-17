@@ -45,9 +45,11 @@ public class ChapterListFragment extends BaseFragment implements View.OnClickLis
                 .getChapterDao()
                 .queryBuilder()
                 .where(ChapterDao.Properties.BookId.eq(bookId)).list();
-        mCurrentChapter = getDaoSession()
-                .getBookDao()
-                .load(bookId).getCurrentChapter();
+        if (getDaoSession().getBookDao().load(bookId) != null) {
+            mCurrentChapter = getDaoSession().getBookDao().load(bookId).getCurrentChapter();
+        } else {
+            mCurrentChapter = 0;
+        }
     }
 
     @Override
@@ -67,6 +69,15 @@ public class ChapterListFragment extends BaseFragment implements View.OnClickLis
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (mChapterList.size() == 0){
+            setBookId(bookId);
+        }
+    }
+
     private void initView(View view) {
         mChapterListView = (RecyclerView) view.findViewById(R.id.chapter_list);
         mBackBtn = (ImageView) view.findViewById(R.id.back_btn);
@@ -75,6 +86,8 @@ public class ChapterListFragment extends BaseFragment implements View.OnClickLis
         mChapterListView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mChapterListView.addItemDecoration(new SimpleDividerItemDecoration(getActivity()));
         mChapterListView.setAdapter(mChapterListAdapter);
+        //滑动到当前章节
+        mChapterListView.scrollToPosition(mCurrentChapter);
 
         mBackBtn.setOnClickListener(this);
     }

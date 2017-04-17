@@ -1,6 +1,7 @@
 package com.codingbingo.fastreader.view.readview;
 
 import android.content.Context;
+import android.provider.Settings;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
@@ -17,6 +18,7 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.avos.avoscloud.LogUtil;
 import com.codingbingo.fastreader.Constants;
 import com.codingbingo.fastreader.R;
 import com.codingbingo.fastreader.manager.SettingManager;
@@ -28,7 +30,6 @@ import com.codingbingo.fastreader.view.readview.interfaces.OnControllerStatusCha
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -85,6 +86,8 @@ public class ReadController extends FrameLayout implements
     private OnClickListener onClickListener;
     private int currentStatus = CONTROLLER_HIDE;//当前controller页面显示状态
 
+    private int currentBrightness;
+
     private int statusBarHeight;
 
     private int currentFontSize;
@@ -105,7 +108,16 @@ public class ReadController extends FrameLayout implements
         //获取对应的高度
         statusBarHeight = ScreenUtils.getStatusBarHeight(context);
         currentFontSize = SettingManager.getInstance().getReadFontSize();
+        try {
+            int screenMode = Settings.System.getInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE);
+            if (screenMode == Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC){
+                Settings.System.putInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE, Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL);
+            }
+            currentBrightness = Settings.System.getInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS);
 
+        } catch (Settings.SettingNotFoundException e){
+            LogUtil.avlog.e(e.getLocalizedMessage());
+        }
         init();
         initView();
 
@@ -191,6 +203,9 @@ public class ReadController extends FrameLayout implements
         mReadProgress.setEnable(false);
         mBrightness.setEnable(true);
 
+        mBrightness.setMax(255);
+        mBrightness.setProgress(currentBrightness);
+
         //阅读模式的切换
         if (settingManager.getReadMode()) {
             mModeImage.setImageResource(R.drawable.sun);
@@ -253,6 +268,10 @@ public class ReadController extends FrameLayout implements
         if (onControllerStatusChangeListener != null) {
             onControllerStatusChangeListener.onControllerStatusChange(false);
         }
+    }
+
+    private void setBrightness(int value){
+        Settings.System.putInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, value);
     }
 
     @Override
@@ -327,6 +346,7 @@ public class ReadController extends FrameLayout implements
                 break;
             case R.id.brightness:
                 //阅读亮度
+                setBrightness(progress);
                 break;
         }
     }
