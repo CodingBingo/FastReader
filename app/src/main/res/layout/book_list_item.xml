@@ -16,7 +16,7 @@
         android:id="@+id/novel_tag"
         android:layout_width="40dp"
         android:layout_height="15dp"
-        android:layout_alignBottom="@id/novel_image"
+        android:layout_alignBottom="@+id/novel_image"
         android:layout_alignParentRight="true"
         android:layout_marginBottom="10dp"
         android:layout_marginRight="10dp"
@@ -29,11 +29,12 @@
         android:id="@+id/novel_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@id/novel_image"
+        android:layout_alignLeft="@+id/novel_image"
         android:layout_below="@id/novel_image"
         android:layout_marginTop="10dp"
         android:maxLines="2"
         android:text="@string/add_book"
+        android:ellipsize="end"
         android:textColor="@color/black"
         android:textSize="15dp" />
 

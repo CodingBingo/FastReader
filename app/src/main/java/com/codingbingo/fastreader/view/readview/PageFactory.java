@@ -156,6 +156,29 @@ public class PageFactory {
                 break;
             case Constants.BOOK_PROCESSING:
                 //书籍正在处理中，但是还没有处理完成，应该继续下一步处理
+                List<Chapter> chapterList = mChapterDao.queryBuilder().where(ChapterDao.Properties.BookId.eq(mBook.getId())).list();
+
+                try {
+
+                    File file = new File(mBook.getBookPath());
+                    mByteBufferLength = file.length();
+                    mMappedByteBuffer = new RandomAccessFile(file, "r").getChannel().map(FileChannel.MapMode.READ_ONLY, 0, mByteBufferLength);
+                    //此处应该根据整个页面的情况计算当前页面能显示多少字符
+
+                    if (chapterList.size() > 0){
+                        Chapter chapter = chapterList.get(chapterList.size() - 1);
+                        //接着上一章节处理
+                        ThreadPool.getInstance().submitTask(new OpenBookTask(chapter.getPosition() + chapter.getTitle().getBytes().length));
+                    } else{
+                        //一点都没处理
+                        //开始处理章节
+                        ThreadPool.getInstance().submitTask(new OpenBookTask(0));
+                    }
+
+                } catch (IOException e) {
+                    //基本没可能了，上面已经确保了文件存在
+                    Log.e(TAG, e.getMessage());
+                }
                 break;
             case Constants.BOOK_PROCESSED:
                 //处理完成，可以开始阅读啦
@@ -182,12 +205,9 @@ public class PageFactory {
 
                 //获取所有章节
                 mChapterList = mChapterDao.queryBuilder().where(ChapterDao.Properties.BookId.eq(mBook.getId())).orderAsc(ChapterDao.Properties.Id).list();
-                //开始读取当前章节
-                Chapter chapter = mChapterList.get(currentChapter);
                 try {
                     mMappedByteBuffer = new RandomAccessFile(bookFile, "r").getChannel().map(FileChannel.MapMode.READ_ONLY, 0, mByteBufferLength);
                     //此处应该根据整个页面的情况计算当前页面能显示多少字符
-
                 } catch (IOException e) {
                     //基本没可能了，上面已经确保了文件存在
                     Log.e(TAG, e.getMessage());
@@ -396,7 +416,7 @@ public class PageFactory {
             mBook.setId(bookId);
 
             //开始处理章节
-            ThreadPool.getInstance().submitTask(new OpenBookTask());
+            ThreadPool.getInstance().submitTask(new OpenBookTask(0));
         } catch (Exception e) {
             //文件已经判断是否存在了，理论上只有文件保存到数据库失败会出现问题
             Log.e(TAG, e.getMessage());
@@ -441,20 +461,40 @@ public class PageFactory {
         onDraw(mCurrentPageCanvas);
     }
 
-    private class OpenBookTask implements Runnable {
+    public class OpenBookTask implements Runnable {
+        private int processStartPosition;
+        private String filePath;
+        private boolean isFinished;
+
+        public OpenBookTask(int processStartPosition) {
+            this.processStartPosition = processStartPosition;
+            filePath = mBook.getBookPath();
+            isFinished = false;
+        }
+
+        public boolean isFinished() {
+            return isFinished;
+        }
+
+        public String getFilePath() {
+            return filePath;
+        }
+
         @Override
         public void run() {
             if (mBook == null || StringUtils.isBlank(mBook.getBookPath())) {
                 Log.e(TAG, "Error filePath");
+                isFinished = true;
                 return;
             }
+
             String charSet = FileUtils.getJavaEncode(mBook.getBookPath());//这个步骤需要消耗不少的时间
 
             mBook.setProcessStatus(Constants.BOOK_PROCESSING);
             mBook.setCharSet(charSet);
             mBookDao.update(mBook);
 
-            processChapters();//刷新页面
+            processChapters(processStartPosition);//刷新页面
 
             mBook.setProcessStatus(Constants.BOOK_PROCESSED);
             mBookDao.update(mBook);
@@ -462,6 +502,7 @@ public class PageFactory {
             //本次书籍处理完毕
             EventBus.getDefault().post(new RefreshBookListEvent());
             EventBus.getDefault().post(new BookStatusChangeEvent(Constants.BOOK_PROCESSED, 100, mBook.getId()));
+            isFinished = true;
         }
     }
 
@@ -470,8 +511,8 @@ public class PageFactory {
      * 读书籍目录，断章
      * 这个需要放到一个线程里面运行
      */
-    public void processChapters() {
-        int currentPosition = 0;
+    public void processChapters(int startPosition) {
+        int currentPosition = startPosition;
         int lastPosition = 0;
 
         Pattern pattern = Pattern.compile("第.{1,7}章.*\r\n");
@@ -511,6 +552,7 @@ public class PageFactory {
             BookStatusChangeEvent bookStatusChangeEvent = new BookStatusChangeEvent();
             bookStatusChangeEvent.setProgress((int)(currentPosition * 100.0 / mByteBufferLength));
             bookStatusChangeEvent.setStatus(Constants.BOOK_PROCESSING);
+            bookStatusChangeEvent.setBookId(mBook.getId());
             EventBus.getDefault().post(bookStatusChangeEvent);
         }
     }

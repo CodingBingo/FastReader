@@ -13,6 +13,7 @@ import com.codingbingo.fastreader.base.BaseFragment;
 import com.codingbingo.fastreader.dao.Book;
 import com.codingbingo.fastreader.dao.BookDao;
 import com.codingbingo.fastreader.model.eventbus.BookStatusChangeEvent;
+import com.codingbingo.fastreader.ui.activity.ReadingActivity;
 import com.codingbingo.fastreader.view.loadingview.CatLoadingView;
 import com.codingbingo.fastreader.view.readview.PageWidget;
 import com.codingbingo.fastreader.view.readview.ReadController;
@@ -142,7 +143,21 @@ public class ReadingFragment extends BaseFragment implements OnControllerStatusC
                 break;
             default:
                 readLoadingView.setVisibility(View.VISIBLE);
-                readLoadingView.setLoadingProgress(bookStatusChangeEvent.getProgress());
+
+                if (bookId == ReadingActivity.NO_BOOK_ID){
+                    List<Book> bookList = getDaoSession()
+                            .getBookDao()
+                            .queryBuilder()
+                            .where(BookDao.Properties.BookPath.eq(bookPath))
+                            .list();
+                    if (bookList.size() > 0){
+                        bookId = bookList.get(0).getId();
+                    }
+                }
+
+                if (bookId == bookStatusChangeEvent.getBookId()){
+                    readLoadingView.setLoadingProgress(bookStatusChangeEvent.getProgress());
+                }
                 break;
         }
     }

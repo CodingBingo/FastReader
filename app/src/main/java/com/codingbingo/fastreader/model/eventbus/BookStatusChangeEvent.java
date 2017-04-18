@@ -14,12 +14,7 @@ public class BookStatusChangeEvent {
     public BookStatusChangeEvent() {
     }
 
-    public BookStatusChangeEvent(int status, int progress) {
-        this.progress = progress;
-        this.status = status;
-    }
-
-    public BookStatusChangeEvent(int status, int progress, long bookId) {
+    public BookStatusChangeEvent( int status, int progress,long bookId) {
         this.progress = progress;
         this.status = status;
         this.bookId = bookId;
