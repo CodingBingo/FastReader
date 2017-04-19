@@ -95,6 +95,18 @@ public class BookListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             } else {
                 //加载
             }
+
+            holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    if (onBookListItemClickListener != null) {
+                        onBookListItemClickListener.onBookItemLongClick(bookList.get(position), position);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            });
         }
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -109,8 +121,6 @@ public class BookListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 }
             }
         });
-
-
     }
 
     @Override
@@ -132,5 +142,6 @@ public class BookListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
      */
     public interface OnBookListItemClickListener {
         void onBookItemClick(Book book, int position);
+        void onBookItemLongClick(Book book, int position);
     }
 }

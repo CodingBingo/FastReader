@@ -9,4 +9,5 @@
     <string name="about">关于快读</string>
 
     <string name="chapter_list">章节列表</string>
+    <string name="delete">删除</string>
 </resources>

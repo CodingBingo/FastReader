@@ -23,6 +23,7 @@ import com.codingbingo.fastreader.dao.Book;
 import com.codingbingo.fastreader.dao.BookDao;
 import com.codingbingo.fastreader.model.eventbus.RefreshBookListEvent;
 import com.codingbingo.fastreader.ui.adapter.BookListAdapter;
+import com.codingbingo.fastreader.ui.fragment.MainControllerBottomSheetFragment;
 import com.codingbingo.fastreader.utils.ScreenUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -184,6 +185,13 @@ public class MainActivity extends BaseActivity implements
             intent.putExtra("bookId", book.getId());
             startActivity(intent);
         }
+    }
+
+    @Override
+    public void onBookItemLongClick(Book book, int position) {
+        MainControllerBottomSheetFragment mainControllerBottomSheetFragment = new MainControllerBottomSheetFragment();
+        mainControllerBottomSheetFragment.setBook(book);
+        mainControllerBottomSheetFragment.show(getSupportFragmentManager(), "Dialog");
     }
 
     @Override

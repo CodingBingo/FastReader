@@ -8,13 +8,14 @@ import android.widget.Toast;
 import com.avos.avoscloud.AVAnalytics;
 import com.codingbingo.fastreader.FRApplication;
 import com.codingbingo.fastreader.dao.DaoSession;
+import com.codingbingo.fastreader.view.LoadingDialog;
 
 /**
  * Created by bingo on 2016/12/24.
  */
 
 public abstract class BaseFragment extends Fragment {
-
+    private LoadingDialog loadingDialog;
     private Toast toast;
 
     public abstract String getFragmentName();
@@ -67,5 +68,27 @@ public abstract class BaseFragment extends Fragment {
             toast.setText(content);
         }
         toast.show();
+    }
+
+    /**
+     * 显示加载动画
+     *
+     * @param message
+     */
+    protected void showLoadingDialog(String message) {
+        if (loadingDialog == null) {
+            loadingDialog = new LoadingDialog(getActivity());
+        }
+
+        loadingDialog.show();
+    }
+
+    /**
+     * 关闭加载动画
+     */
+    protected void dismissLoadingDialog() {
+        if (loadingDialog != null) {
+            loadingDialog.dismiss();
+        }
     }
 }

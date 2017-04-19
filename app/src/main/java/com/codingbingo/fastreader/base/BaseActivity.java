@@ -1,6 +1,7 @@
 package com.codingbingo.fastreader.base;
 
 import android.app.FragmentManager;
+import android.app.ProgressDialog;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -11,6 +12,7 @@ import android.widget.Toast;
 import com.avos.avoscloud.AVAnalytics;
 import com.codingbingo.fastreader.FRApplication;
 import com.codingbingo.fastreader.dao.DaoSession;
+import com.codingbingo.fastreader.view.LoadingDialog;
 
 /**
  * Created by bingo on 2016/12/23.
@@ -20,6 +22,7 @@ public class BaseActivity extends AppCompatActivity {
     public static final int NO_BOOK_ID = -1;
     protected FragmentManager mFragmentManager;
 
+    private LoadingDialog loadingDialog;
     private Toast toast;
 
     @Override
@@ -90,13 +93,19 @@ public class BaseActivity extends AppCompatActivity {
      * @param message
      */
     protected void showLoadingDialog(String message) {
+        if (loadingDialog == null) {
+            loadingDialog = new LoadingDialog(this);
+        }
 
+        loadingDialog.show();
     }
 
     /**
      * 关闭加载动画
      */
     protected void dismissLoadingDialog() {
-
+        if (loadingDialog != null) {
+            loadingDialog.dismiss();
+        }
     }
 }

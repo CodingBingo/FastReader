@@ -10,12 +10,18 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 
+import com.codingbingo.fastreader.Constants;
 import com.codingbingo.fastreader.R;
 import com.codingbingo.fastreader.base.BaseFragment;
+import com.codingbingo.fastreader.dao.Book;
 import com.codingbingo.fastreader.dao.Chapter;
 import com.codingbingo.fastreader.dao.ChapterDao;
+import com.codingbingo.fastreader.model.eventbus.BookStatusChangeEvent;
 import com.codingbingo.fastreader.ui.adapter.ChapterListAdapter;
+import com.codingbingo.fastreader.ui.listener.OnChapterClickListener;
 import com.codingbingo.fastreader.utils.SimpleDividerItemDecoration;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.List;
 
@@ -25,7 +31,7 @@ import java.util.List;
  * By 2017/3/30.
  */
 
-public class ChapterListFragment extends BaseFragment implements View.OnClickListener{
+public class ChapterListFragment extends BaseFragment implements View.OnClickListener, OnChapterClickListener {
 
     private RecyclerView mChapterListView;
     private ChapterListAdapter mChapterListAdapter;
@@ -83,6 +89,7 @@ public class ChapterListFragment extends BaseFragment implements View.OnClickLis
         mBackBtn = (ImageView) view.findViewById(R.id.back_btn);
 
         mChapterListAdapter = new ChapterListAdapter(getActivity(), mChapterList, mCurrentChapter);
+        mChapterListAdapter.setOnChapterClickListener(this);
         mChapterListView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mChapterListView.addItemDecoration(new SimpleDividerItemDecoration(getActivity()));
         mChapterListView.setAdapter(mChapterListAdapter);
@@ -99,5 +106,18 @@ public class ChapterListFragment extends BaseFragment implements View.OnClickLis
                 getFragmentManager().popBackStack();
                 break;
         }
+    }
+
+    @Override
+    public void onChapterClick(int chapter) {
+        mCurrentChapter = chapter;
+
+        Book book = getDaoSession().getBookDao().load(bookId);
+        book.setCurrentChapter(chapter);
+        book.setCurrentPosition(mChapterList.get(chapter).getPosition());
+        getDaoSession().getBookDao().update(book);
+
+        EventBus.getDefault().post(new BookStatusChangeEvent(Constants.BOOK_PROCESSED, 100, bookId));
+        getFragmentManager().popBackStack();
     }
 }

@@ -206,6 +206,8 @@ public class ReadController extends FrameLayout implements
         mBrightness.setMax(255);
         mBrightness.setProgress(currentBrightness);
 
+        mReadProgress.setMax(100);
+
         //阅读模式的切换
         if (settingManager.getReadMode()) {
             mModeImage.setImageResource(R.drawable.sun);

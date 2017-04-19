@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.codingbingo.fastreader.R;
 import com.codingbingo.fastreader.dao.Chapter;
+import com.codingbingo.fastreader.ui.listener.OnChapterClickListener;
 
 import java.util.List;
 
@@ -25,10 +26,16 @@ public class ChapterListAdapter extends RecyclerView.Adapter<ChapterListAdapter.
     private List<Chapter> chapterList;
     private int mCurrentChapter;
 
+    private OnChapterClickListener onChapterClickListener;
+
     public ChapterListAdapter(Context mContext, List<Chapter> chapterList, int mCurrentChapter) {
         this.mContext = mContext;
         this.chapterList = chapterList;
         this.mCurrentChapter = mCurrentChapter;
+    }
+
+    public void setOnChapterClickListener(OnChapterClickListener onChapterClickListener) {
+        this.onChapterClickListener = onChapterClickListener;
     }
 
     @Override
@@ -38,17 +45,27 @@ public class ChapterListAdapter extends RecyclerView.Adapter<ChapterListAdapter.
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(ViewHolder holder, final int position) {
         Chapter chapter = chapterList.get(position);
 
         holder.chapterTitle.setText(chapter.getTitle());
         if (position == mCurrentChapter) {
             holder.chapterCurrent.setVisibility(View.VISIBLE);
             holder.chapterTitle.setTypeface(null, Typeface.BOLD);
-        }else{
+        } else {
             holder.chapterCurrent.setVisibility(View.INVISIBLE);
             holder.chapterTitle.setTypeface(null, Typeface.NORMAL);
         }
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (onChapterClickListener != null) {
+                    onChapterClickListener.onChapterClick(position);
+                }
+            }
+        });
+
     }
 
     @Override
