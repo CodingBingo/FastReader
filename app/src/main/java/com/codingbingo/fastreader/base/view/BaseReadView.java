@@ -11,6 +11,8 @@ import android.view.View;
 import android.widget.Scroller;
 import android.widget.Toast;
 
+import com.avos.avoscloud.LogUtil;
+import com.codingbingo.fastreader.Constants;
 import com.codingbingo.fastreader.FRApplication;
 import com.codingbingo.fastreader.base.BaseActivity;
 import com.codingbingo.fastreader.dao.Book;
@@ -100,8 +102,12 @@ public abstract class BaseReadView extends View {
         }
     }
 
-    public void setBookId(long bookId) {
-        if (this.bookId != bookId) {
+    public void setBookId(long bookId, boolean needRefresh) {
+        LogUtil.log.e("bookId: " + bookId + " ------ this.bookId: " + this.bookId);
+        LogUtil.log.e("book is null: " + (book == null));
+        LogUtil.log.e("book process status: " + (book != null ? book.getProcessStatus() : "null"));
+
+        if (book == null || book.getProcessStatus() != Constants.BOOK_PROCESSED || this.bookId != bookId || needRefresh == true) {
             this.bookId = bookId;
             pagefactory.openBook(bookId);
         } else {

@@ -36,7 +36,7 @@ import java.util.List;
  * By 2017/3/30.
  */
 
-public class ReadingFragment extends BaseFragment implements OnControllerStatusChangeListener, OnReadChapterProgressListener{
+public class ReadingFragment extends BaseFragment implements OnControllerStatusChangeListener, OnReadChapterProgressListener {
 
     private PageWidget readPageWidget;
     private ReadController readController;
@@ -86,7 +86,7 @@ public class ReadingFragment extends BaseFragment implements OnControllerStatusC
         readPageWidget = (PageWidget) view.findViewById(R.id.readPageWidget);
         //bookId判断书籍状态种类
         if (BaseActivity.NO_BOOK_ID != bookId) {
-            readPageWidget.setBookId(bookId);
+            readPageWidget.setBookId(bookId, false);
             mBook = getDaoSession().getBookDao().load(bookId);
         } else {
             List<Book> bookList = getDaoSession()
@@ -96,10 +96,10 @@ public class ReadingFragment extends BaseFragment implements OnControllerStatusC
                     .list();
             if (bookList.size() == 0) {
                 readPageWidget.setBookPath(bookPath);
-            } else{
+            } else {
                 mBook = bookList.get(0);
                 bookId = mBook.getId();
-                readPageWidget.setBookId(mBook.getId());
+                readPageWidget.setBookId(mBook.getId(), false);
             }
         }
 
@@ -130,11 +130,11 @@ public class ReadingFragment extends BaseFragment implements OnControllerStatusC
         readController.setOnReadChapterProgressListener(this);
     }
 
-    public void nextPage(){
+    public void nextPage() {
         readPageWidget.nextPage();
     }
 
-    public void prePage(){
+    public void prePage() {
         readPageWidget.prePage();
     }
 
@@ -162,32 +162,51 @@ public class ReadingFragment extends BaseFragment implements OnControllerStatusC
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEvent(BookStatusChangeEvent bookStatusChangeEvent){
-        switch (bookStatusChangeEvent.getStatus()){
+    public void onEvent(BookStatusChangeEvent bookStatusChangeEvent) {
+        if (bookId != BaseActivity.NO_BOOK_ID && bookId != bookStatusChangeEvent.getBookId()) {
+            //不处理
+            LogUtil.log.i("bookId不同，不是同一书籍，不更新。");
+            return;
+        }
+        if (bookId == BaseActivity.NO_BOOK_ID){
+            Book tempBook = getDaoSession().getBookDao().load(bookStatusChangeEvent.getBookId());
+            if (tempBook == null || tempBook.getBookPath().equals(bookPath) == false) {
+                LogUtil.log.i("bookPath不同，不是同一书籍，不更新。");
+                return;
+            }
+        }
+
+
+        switch (bookStatusChangeEvent.getStatus()) {
             case Constants.BOOK_PROCESSED:
+                LogUtil.log.e("*****************************");
+                LogUtil.log.e("Current bookId is: " + bookId);
+                LogUtil.log.e("Current bookPath is: " + bookPath);
+                LogUtil.log.e("Pass bookId is: " + bookStatusChangeEvent.getBookId());
+                LogUtil.log.e("*****************************");
+
                 readLoadingView.setVisibility(View.GONE);
                 bookId = bookStatusChangeEvent.getBookId();
-                readPageWidget.setBookId(bookId);
+                readPageWidget.setBookId(bookId, true);
                 readPageWidget.postInvalidate();
-
                 notifyController();
                 break;
             default:
                 readLoadingView.setVisibility(View.VISIBLE);
 
-                if (bookId == ReadingActivity.NO_BOOK_ID){
+                if (bookId == ReadingActivity.NO_BOOK_ID) {
                     List<Book> bookList = getDaoSession()
                             .getBookDao()
                             .queryBuilder()
                             .where(BookDao.Properties.BookPath.eq(bookPath))
                             .list();
-                    if (bookList.size() > 0){
+                    if (bookList.size() > 0) {
                         mBook = bookList.get(0);
                         bookId = mBook.getId();
                     }
                 }
 
-                if (bookId == bookStatusChangeEvent.getBookId()){
+                if (bookId == bookStatusChangeEvent.getBookId()) {
                     readLoadingView.setLoadingProgress(bookStatusChangeEvent.getProgress());
                 }
                 break;
@@ -207,9 +226,9 @@ public class ReadingFragment extends BaseFragment implements OnControllerStatusC
             mBook.setCurrentPosition(currentChapter.getPosition());
             getDaoSession().getBookDao().update(mBook);
 
-            readPageWidget.setBookId(mBook.getId());
+            readPageWidget.setBookId(mBook.getId(), false);
             readPageWidget.postInvalidate();
-        }else {
+        } else {
             LogUtil.avlog.e("onReadProgressChanged currentChapter is null, " + "progress -- " + progress);
         }
     }

@@ -39,7 +39,7 @@ public class ThreadPool {
         processMap = new HashMap<>();
     }
 
-    public void submitTask(Runnable runnable) {
+    public synchronized void submitTask(Runnable runnable) {
         for (String key : processMap.keySet()) {
             if (processMap.get(key).isFinished() == true) {
                 processMap.remove(key);
