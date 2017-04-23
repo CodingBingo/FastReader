@@ -166,8 +166,8 @@ public class ReadingFragment extends BaseFragment implements OnControllerStatusC
         switch (bookStatusChangeEvent.getStatus()){
             case Constants.BOOK_PROCESSED:
                 readLoadingView.setVisibility(View.GONE);
-                readPageWidget.setBookId(bookStatusChangeEvent.getBookId());
                 bookId = bookStatusChangeEvent.getBookId();
+                readPageWidget.setBookId(bookId);
                 readPageWidget.postInvalidate();
 
                 notifyController();

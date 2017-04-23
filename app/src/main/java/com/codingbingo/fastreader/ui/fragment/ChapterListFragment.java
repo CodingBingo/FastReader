@@ -12,8 +12,10 @@ import android.widget.ListAdapter;
 
 import com.codingbingo.fastreader.Constants;
 import com.codingbingo.fastreader.R;
+import com.codingbingo.fastreader.base.BaseActivity;
 import com.codingbingo.fastreader.base.BaseFragment;
 import com.codingbingo.fastreader.dao.Book;
+import com.codingbingo.fastreader.dao.BookDao;
 import com.codingbingo.fastreader.dao.Chapter;
 import com.codingbingo.fastreader.dao.ChapterDao;
 import com.codingbingo.fastreader.model.eventbus.BookStatusChangeEvent;
@@ -37,6 +39,7 @@ public class ChapterListFragment extends BaseFragment implements View.OnClickLis
     private ChapterListAdapter mChapterListAdapter;
     private ImageView mBackBtn;
 
+    private String bookPath;
     private long bookId;
     private List<Chapter> mChapterList;
     private int mCurrentChapter;
@@ -47,15 +50,27 @@ public class ChapterListFragment extends BaseFragment implements View.OnClickLis
     public void setBookId(long bookId) {
         this.bookId = bookId;
 
-        mChapterList = getDaoSession()
-                .getChapterDao()
-                .queryBuilder()
-                .where(ChapterDao.Properties.BookId.eq(bookId)).list();
+        if (mChapterList == null || mChapterList.size() == 0) {
+            mChapterList = getDaoSession()
+                    .getChapterDao()
+                    .queryBuilder()
+                    .where(ChapterDao.Properties.BookId.eq(bookId)).list();
+        }
         if (getDaoSession().getBookDao().load(bookId) != null) {
             mCurrentChapter = getDaoSession().getBookDao().load(bookId).getCurrentChapter();
         } else {
             mCurrentChapter = 0;
         }
+
+        if (mChapterListAdapter != null){
+            mChapterListAdapter.setmCurrentChapter(mCurrentChapter);
+            mChapterListView.scrollToPosition(mCurrentChapter);
+        }
+        mChapterListAdapter.notifyDataSetChanged();
+    }
+
+    public void setBookPath(String bookPath) {
+        this.bookPath = bookPath;
     }
 
     @Override
@@ -79,9 +94,14 @@ public class ChapterListFragment extends BaseFragment implements View.OnClickLis
     public void onResume() {
         super.onResume();
 
-        if (mChapterList.size() == 0){
-            setBookId(bookId);
+        if (bookId == BaseActivity.NO_BOOK_ID){
+            List<Book> bookList = getDaoSession().getBookDao().queryBuilder().where(BookDao.Properties.BookPath.eq(bookPath)).list();
+            if (bookList.size() > 0){
+                bookId = bookList.get(0).getId();
+            }
         }
+
+        setBookId(bookId);
     }
 
     private void initView(View view) {

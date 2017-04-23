@@ -34,6 +34,10 @@ public class ChapterListAdapter extends RecyclerView.Adapter<ChapterListAdapter.
         this.mCurrentChapter = mCurrentChapter;
     }
 
+    public void setmCurrentChapter(int mCurrentChapter) {
+        this.mCurrentChapter = mCurrentChapter;
+    }
+
     public void setOnChapterClickListener(OnChapterClickListener onChapterClickListener) {
         this.onChapterClickListener = onChapterClickListener;
     }

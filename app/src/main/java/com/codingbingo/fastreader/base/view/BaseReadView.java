@@ -12,6 +12,7 @@ import android.widget.Scroller;
 import android.widget.Toast;
 
 import com.codingbingo.fastreader.FRApplication;
+import com.codingbingo.fastreader.base.BaseActivity;
 import com.codingbingo.fastreader.dao.Book;
 import com.codingbingo.fastreader.dao.BookDao;
 import com.codingbingo.fastreader.dao.ChapterDao;
@@ -43,7 +44,7 @@ public abstract class BaseReadView extends View {
     protected Canvas mCurrentPageCanvas, mNextPageCanvas;
     protected PageFactory pagefactory = null;
 
-    protected long bookId;
+    protected long bookId = BaseActivity.NO_BOOK_ID;
     protected String bookPath;
     protected Book book;
     protected boolean isPrepared = true;
@@ -111,7 +112,7 @@ public abstract class BaseReadView extends View {
     }
 
     public void setBookPath(String bookPath) {
-        if (!this.bookPath.equals(bookPath)) {
+        if (this.bookPath == null || !this.bookPath.equals(bookPath)) {
             this.bookPath = bookPath;
             pagefactory.openBook(bookPath);
         } else {
