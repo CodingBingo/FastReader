@@ -505,6 +505,15 @@ public class PageFactory {
 
             processChapters(processStartPosition);//刷新页面
 
+            mChapterList = mChapterDao.queryBuilder().where(ChapterDao.Properties.BookId.eq(mBook.getId())).list();
+            if (mChapterList == null || mChapterList.size() == 0){
+                Chapter chapter = new Chapter();
+                chapter.setTitle(mBook.getBookName());
+                chapter.setBook(mBook);
+                chapter.setPosition(0);
+                mChapterDao.insert(chapter);
+            }
+
             mBook.setProcessStatus(Constants.BOOK_PROCESSED);
             mBookDao.update(mBook);
 
@@ -624,10 +633,11 @@ public class PageFactory {
             tempStartPos = currentStartPosition;
             //向下移
             currentStartPosition = currentEndPosition;
-
-            Chapter nextChapter = mChapterList.get(currentChapter + 1);
-            if (currentEndPosition == nextChapter.getPosition()) {
-                currentChapter++;
+            if (currentChapter + 1 < mChapterList.size()) {
+                Chapter nextChapter = mChapterList.get(currentChapter + 1);
+                if (currentEndPosition == nextChapter.getPosition()) {
+                    currentChapter++;
+                }
             }
 
             mLines.clear();
