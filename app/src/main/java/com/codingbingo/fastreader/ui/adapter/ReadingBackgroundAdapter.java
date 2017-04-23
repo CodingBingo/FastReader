@@ -49,6 +49,7 @@ public class ReadingBackgroundAdapter extends RecyclerView.Adapter<ReadingBackgr
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                SettingManager.getInstance().setReadMode(false);
                 SettingManager.getInstance().setReadBackground(color);
 
                 EventBus.getDefault().post(new StyleChangeEvent());

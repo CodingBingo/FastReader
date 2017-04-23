@@ -100,15 +100,23 @@ public abstract class BaseReadView extends View {
     }
 
     public void setBookId(long bookId) {
-        this.bookId = bookId;
-        pagefactory.openBook(bookId);
+        if (this.bookId != bookId) {
+            this.bookId = bookId;
+            pagefactory.openBook(bookId);
+        } else {
+            pagefactory.clearParams();
+        }
 
         init();
     }
 
     public void setBookPath(String bookPath) {
-        this.bookPath = bookPath;
-        pagefactory.openBook(bookPath);
+        if (!this.bookPath.equals(bookPath)) {
+            this.bookPath = bookPath;
+            pagefactory.openBook(bookPath);
+        } else {
+            pagefactory.clearParams();
+        }
 
         init();
     }

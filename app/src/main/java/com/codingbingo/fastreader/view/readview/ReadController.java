@@ -24,6 +24,7 @@ import com.codingbingo.fastreader.R;
 import com.codingbingo.fastreader.manager.SettingManager;
 import com.codingbingo.fastreader.model.eventbus.StyleChangeEvent;
 import com.codingbingo.fastreader.ui.adapter.ReadingBackgroundAdapter;
+import com.codingbingo.fastreader.ui.listener.OnReadChapterProgressListener;
 import com.codingbingo.fastreader.utils.ScreenUtils;
 import com.codingbingo.fastreader.view.SwitchableSeekBar;
 import com.codingbingo.fastreader.view.readview.interfaces.OnControllerStatusChangeListener;
@@ -83,7 +84,9 @@ public class ReadController extends FrameLayout implements
     private Animation bottomInAnimation;
 
     private OnControllerStatusChangeListener onControllerStatusChangeListener;
+    private OnReadChapterProgressListener onReadChapterProgressListener;
     private OnClickListener onClickListener;
+
     private int currentStatus = CONTROLLER_HIDE;//当前controller页面显示状态
 
     private int currentBrightness;
@@ -123,6 +126,17 @@ public class ReadController extends FrameLayout implements
 
         this.setOnTouchListener(this);
         currentStatus = CONTROLLER_HIDE;
+    }
+
+    public void setOnReadChapterProgressListener(OnReadChapterProgressListener onReadChapterProgressListener) {
+        this.onReadChapterProgressListener = onReadChapterProgressListener;
+    }
+
+    public void setTotalChaptersNum(int currentChapter, int totalChaptersNum) {
+        mReadProgress.setMax(totalChaptersNum);
+        mReadProgress.setProgress(currentChapter);
+        //可以移动了
+        mReadProgress.setEnable(true);
     }
 
     @Override
@@ -205,8 +219,6 @@ public class ReadController extends FrameLayout implements
 
         mBrightness.setMax(255);
         mBrightness.setProgress(currentBrightness);
-
-        mReadProgress.setMax(100);
 
         //阅读模式的切换
         if (settingManager.getReadMode()) {
@@ -345,6 +357,9 @@ public class ReadController extends FrameLayout implements
         switch (seekBar.getId()) {
             case R.id.read_progress:
                 //阅读进度，只有在所有的章节都load完成之后才能可用
+                if (onReadChapterProgressListener != null && fromUser){
+                    onReadChapterProgressListener.onReadProgressChanged(seekBar, progress, fromUser);
+                }
                 break;
             case R.id.brightness:
                 //阅读亮度

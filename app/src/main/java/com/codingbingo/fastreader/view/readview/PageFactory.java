@@ -132,6 +132,15 @@ public class PageFactory {
         mBottomPaint.setColor(Color.GRAY);
     }
 
+    public void clearParams(){
+        mLines.clear();
+        //更新一下book对象
+        mBook = mBookDao.load(mBook.getId());
+        currentChapter = mBook.getCurrentChapter();
+        currentStartPosition = mBook.getCurrentPosition();
+        currentEndPosition = 0;
+    }
+
     /**
      * 打开已经加入数据库的书籍
      *

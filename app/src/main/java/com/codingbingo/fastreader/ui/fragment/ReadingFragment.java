@@ -5,15 +5,20 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SeekBar;
 
+import com.avos.avoscloud.LogUtil;
 import com.codingbingo.fastreader.Constants;
 import com.codingbingo.fastreader.R;
 import com.codingbingo.fastreader.base.BaseActivity;
 import com.codingbingo.fastreader.base.BaseFragment;
 import com.codingbingo.fastreader.dao.Book;
 import com.codingbingo.fastreader.dao.BookDao;
+import com.codingbingo.fastreader.dao.Chapter;
+import com.codingbingo.fastreader.dao.ChapterDao;
 import com.codingbingo.fastreader.model.eventbus.BookStatusChangeEvent;
 import com.codingbingo.fastreader.ui.activity.ReadingActivity;
+import com.codingbingo.fastreader.ui.listener.OnReadChapterProgressListener;
 import com.codingbingo.fastreader.view.loadingview.CatLoadingView;
 import com.codingbingo.fastreader.view.readview.PageWidget;
 import com.codingbingo.fastreader.view.readview.ReadController;
@@ -31,7 +36,7 @@ import java.util.List;
  * By 2017/3/30.
  */
 
-public class ReadingFragment extends BaseFragment implements OnControllerStatusChangeListener {
+public class ReadingFragment extends BaseFragment implements OnControllerStatusChangeListener, OnReadChapterProgressListener{
 
     private PageWidget readPageWidget;
     private ReadController readController;
@@ -41,6 +46,9 @@ public class ReadingFragment extends BaseFragment implements OnControllerStatusC
 
     private long bookId;
     private String bookPath;
+
+    private Book mBook;
+    private List<Chapter> mChapterList;
 
     @Override
     public String getFragmentName() {
@@ -79,6 +87,7 @@ public class ReadingFragment extends BaseFragment implements OnControllerStatusC
         //bookId判断书籍状态种类
         if (BaseActivity.NO_BOOK_ID != bookId) {
             readPageWidget.setBookId(bookId);
+            mBook = getDaoSession().getBookDao().load(bookId);
         } else {
             List<Book> bookList = getDaoSession()
                     .getBookDao()
@@ -88,17 +97,37 @@ public class ReadingFragment extends BaseFragment implements OnControllerStatusC
             if (bookList.size() == 0) {
                 readPageWidget.setBookPath(bookPath);
             } else{
-                readPageWidget.setBookId(bookList.get(0).getId());
+                mBook = bookList.get(0);
+                bookId = mBook.getId();
+                readPageWidget.setBookId(mBook.getId());
             }
         }
 
         readLoadingView = (CatLoadingView) view.findViewById(R.id.loading);
-        Book book = getDaoSession().getBookDao().load(bookId);
-        if (book == null || book.getProcessStatus() != Constants.BOOK_PROCESSED) {
+        if (mBook == null || mBook.getProcessStatus() != Constants.BOOK_PROCESSED) {
             readLoadingView.setVisibility(View.VISIBLE);
+            //说明书籍不存在或者还没有处理好
         } else {
             readLoadingView.setVisibility(View.GONE);
+
+            notifyController();
         }
+    }
+
+    /**
+     * 设置控制页面的状态
+     */
+    private void notifyController() {
+        if (mBook == null) {
+            mBook = getDaoSession().getBookDao().load(bookId);
+        }
+
+        mChapterList = getDaoSession()
+                .getChapterDao()
+                .queryBuilder()
+                .where(ChapterDao.Properties.BookId.eq(bookId)).list();
+        readController.setTotalChaptersNum(mBook.getCurrentChapter(), mChapterList.size() - 1);
+        readController.setOnReadChapterProgressListener(this);
     }
 
     public void nextPage(){
@@ -140,6 +169,8 @@ public class ReadingFragment extends BaseFragment implements OnControllerStatusC
                 readPageWidget.setBookId(bookStatusChangeEvent.getBookId());
                 bookId = bookStatusChangeEvent.getBookId();
                 readPageWidget.postInvalidate();
+
+                notifyController();
                 break;
             default:
                 readLoadingView.setVisibility(View.VISIBLE);
@@ -151,7 +182,8 @@ public class ReadingFragment extends BaseFragment implements OnControllerStatusC
                             .where(BookDao.Properties.BookPath.eq(bookPath))
                             .list();
                     if (bookList.size() > 0){
-                        bookId = bookList.get(0).getId();
+                        mBook = bookList.get(0);
+                        bookId = mBook.getId();
                     }
                 }
 
@@ -165,5 +197,20 @@ public class ReadingFragment extends BaseFragment implements OnControllerStatusC
     @Override
     public void onControllerStatusChange(boolean isShowing) {
         switchFullScreen(!isShowing);
+    }
+
+    @Override
+    public void onReadProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        mBook.setCurrentChapter(progress);
+        Chapter currentChapter = mChapterList.get(progress);
+        if (currentChapter != null) {
+            mBook.setCurrentPosition(currentChapter.getPosition());
+            getDaoSession().getBookDao().update(mBook);
+
+            readPageWidget.setBookId(mBook.getId());
+            readPageWidget.postInvalidate();
+        }else {
+            LogUtil.avlog.e("onReadProgressChanged currentChapter is null, " + "progress -- " + progress);
+        }
     }
 }
