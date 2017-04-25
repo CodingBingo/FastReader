@@ -1,8 +1,14 @@
 package com.codingbingo.fastreader.ui.activity;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -15,7 +21,6 @@ import com.codingbingo.fastreader.model.LocalFile;
 import com.codingbingo.fastreader.ui.adapter.FileListAdapter;
 import com.codingbingo.fastreader.utils.FileUtils;
 
-import org.greenrobot.eventbus.EventBus;
 
 import java.util.List;
 
@@ -51,13 +56,55 @@ public class LocalFileListActivity extends BaseActivity implements View.OnClickL
 
         backBtn.setOnClickListener(this);
         reloadBtn.setOnClickListener(this);
+        ifNeedReadePermission();
+    }
 
+    private void ifNeedReadePermission(){
+        // Here, thisActivity is the current activity
+        if(Build.VERSION.SDK_INT >= 23) {
+            if (ContextCompat.checkSelfPermission(LocalFileListActivity.this,
+                    Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                // Should we show an explanation?
+                if (ActivityCompat.shouldShowRequestPermissionRationale(LocalFileListActivity.this,
+                        Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                } else {
+                    ActivityCompat.requestPermissions(LocalFileListActivity.this,
+                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
+                                    Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            0);
+                }
+            } else {
+                readLocalFiles();
+            }
+        }else {
+            readLocalFiles();
+        }
+    }
+
+    private void readLocalFiles(){
         localFileList = FileUtils.getSupportFileList(this, new String[]{"txt"});
         localFileListAdapter = new FileListAdapter(this, localFileList);
         localFileListAdapter.setOnItemClickListener(this);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         localFileListView.setLayoutManager(linearLayoutManager);
         localFileListView.setAdapter(localFileListAdapter);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case 0: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    readLocalFiles();
+                }
+                return;
+            }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override

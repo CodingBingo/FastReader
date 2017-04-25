@@ -1,6 +1,7 @@
 package com.codingbingo.fastreader.view.readview;
 
 import android.content.Context;
+import android.os.Build;
 import android.provider.Settings;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -18,7 +19,6 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.avos.avoscloud.LogUtil;
 import com.codingbingo.fastreader.Constants;
 import com.codingbingo.fastreader.R;
 import com.codingbingo.fastreader.manager.SettingManager;
@@ -111,21 +111,35 @@ public class ReadController extends FrameLayout implements
         //获取对应的高度
         statusBarHeight = ScreenUtils.getStatusBarHeight(context);
         currentFontSize = SettingManager.getInstance().getReadFontSize();
-        try {
-            int screenMode = Settings.System.getInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE);
-            if (screenMode == Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC){
-                Settings.System.putInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE, Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL);
-            }
-            currentBrightness = Settings.System.getInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS);
-
-        } catch (Settings.SettingNotFoundException e){
-            LogUtil.avlog.e(e.getLocalizedMessage());
-        }
+        setBrightnessMode(mContext);
         init();
         initView();
-
         this.setOnTouchListener(this);
         currentStatus = CONTROLLER_HIDE;
+    }
+
+    private void setBrightnessMode(Context context) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (Settings.System.canWrite(context)) {
+                    Settings.System.putInt(context.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE, Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC);
+                    int screenMode = Settings.System.getInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE);
+                    if (screenMode == Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC){
+                        Settings.System.putInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE, Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL);
+                    }
+                    currentBrightness = Settings.System.getInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS);
+                } else {//获取权限，但这权限其实没意义不用获取
+//                    Intent intent = new Intent(android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS);
+//                    intent.setData(Uri.parse("package:" + context.getPackageName()));
+//                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                    context.startActivity(intent);
+                }
+            } else {
+                Settings.System.putInt(context.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE, Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void setOnReadChapterProgressListener(OnReadChapterProgressListener onReadChapterProgressListener) {
