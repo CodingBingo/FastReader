@@ -340,6 +340,7 @@ public class PageFactory {
         }
 
         mLineCount = mVisibleHeight / (mFontSize + mLineSpace);
+        currentStartPosition = currentEndPosition;
         while ((lines.size() < mLineCount) && currentEndPosition < mByteBufferLength) {
             byte[] paragraphBuffer = readParagraphForward(currentEndPosition);
             currentEndPosition += paragraphBuffer.length;

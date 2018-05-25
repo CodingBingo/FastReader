@@ -175,7 +175,7 @@ public class ReadController extends FrameLayout implements
             double width_p2 = width * 0.6;
 
             double height_p1 = height * 0.3;
-            double height_p2 = height * 0.6;
+            double height_p2 = height * 0.7;
             if(x < width_p1){
                 //上一页
                 this.readPageWidget.prePage();
