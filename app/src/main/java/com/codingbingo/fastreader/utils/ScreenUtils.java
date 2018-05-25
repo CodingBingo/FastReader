@@ -25,6 +25,7 @@ import android.util.TypedValue;
 import android.view.Window;
 import android.view.WindowManager;
 
+import com.avos.avoscloud.LogUtil;
 import com.codingbingo.fastreader.base.utils.BaseUtils;
 
 import java.lang.reflect.Field;
@@ -200,7 +201,7 @@ public class ScreenUtils extends BaseUtils {
                     activity.getContentResolver(),
                     Settings.System.SCREEN_BRIGHTNESS_MODE) == Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
         } catch (Settings.SettingNotFoundException e) {
-            e.printStackTrace();
+            LogUtil.log.e("判断是否开启自动调节亮度失败", e);
         }
         return isAutoAdjustBright;
     }
@@ -239,7 +240,7 @@ public class ScreenUtils extends BaseUtils {
         try {
             screenBrightness = Settings.System.getInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS);
         } catch (Exception e) {
-            e.printStackTrace();
+            LogUtil.log.e("getScreenBrightness", e);
         }
         return screenBrightness / 255.0F * 100;
     }
@@ -258,7 +259,7 @@ public class ScreenUtils extends BaseUtils {
             float f = paramInt / 100.0F * 255;
             Settings.System.putInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, (int) f);
         } catch (Exception e) {
-            e.printStackTrace();
+           LogUtil.log.e("saveScreenBrightness", e);
         }
     }
 

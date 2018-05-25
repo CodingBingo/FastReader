@@ -1,6 +1,8 @@
 package com.codingbingo.fastreader.view.readview;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.v7.widget.LinearLayoutManager;
@@ -19,6 +21,7 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.avos.avoscloud.LogUtil;
 import com.codingbingo.fastreader.Constants;
 import com.codingbingo.fastreader.R;
 import com.codingbingo.fastreader.manager.SettingManager;
@@ -139,16 +142,16 @@ public class ReadController extends FrameLayout implements
                     }
                     currentBrightness = Settings.System.getInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS);
                 } else {//获取权限，但这权限其实没意义不用获取
-//                    Intent intent = new Intent(android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS);
-//                    intent.setData(Uri.parse("package:" + context.getPackageName()));
-//                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                    context.startActivity(intent);
+                    Intent intent = new Intent(android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS);
+                    intent.setData(Uri.parse("package:" + context.getPackageName()));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(intent);
                 }
             } else {
                 Settings.System.putInt(context.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE, Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LogUtil.log.e("设置系统亮度模式出错" ,e);
         }
     }
 
@@ -335,7 +338,22 @@ public class ReadController extends FrameLayout implements
         }
     }
 
-    private void setBrightness(int value){
+    private void setBrightness(int value) throws Settings.SettingNotFoundException{
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Settings.System.canWrite(mContext)) {
+                Settings.System.putInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE, Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC);
+                int screenMode = Settings.System.getInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE);
+                if (screenMode == Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC){
+                    Settings.System.putInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE, Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL);
+                }
+            }else {//获取权限，但这权限其实没意义不用获取
+                Intent intent = new Intent(android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS);
+                intent.setData(Uri.parse("package:" + mContext.getPackageName()));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                mContext.startActivity(intent);
+            }
+
+        }
         Settings.System.putInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, value);
     }
 
@@ -414,7 +432,11 @@ public class ReadController extends FrameLayout implements
                 break;
             case R.id.brightness:
                 //阅读亮度
-                setBrightness(progress);
+                try {
+                    setBrightness(progress);
+                } catch (Settings.SettingNotFoundException e) {
+                    LogUtil.log.e("调整系统亮度失败", e);
+                }
                 break;
         }
     }

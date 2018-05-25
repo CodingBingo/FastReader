@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
 
+import com.avos.avoscloud.LogUtil;
 import com.codingbingo.fastreader.model.LocalFile;
 import com.codingbingo.fastreader.utils.encode.BytesEncodingDetect;
 
@@ -62,7 +63,7 @@ public class FileUtils {
                 uri, new String[]{MediaStore.Files.FileColumns.DATA, MediaStore.Files.FileColumns.SIZE}, searchPath, null, null);
 
         if (cursor == null) {
-            System.out.println("Cursor 获取失败!");
+            LogUtil.log.e("Cursor 获取失败!");
         } else {
             if (cursor.moveToFirst()) {
                 do {
@@ -83,7 +84,7 @@ public class FileUtils {
 
                                 searchFileList.add(localFile);
                             } catch (UnsupportedEncodingException e) {
-                                e.printStackTrace();
+                                LogUtil.log.e("getSupportFileList", e);
                             }
                         }
                     }

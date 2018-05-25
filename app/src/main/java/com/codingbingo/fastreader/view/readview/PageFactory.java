@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.Log;
 
+import com.avos.avoscloud.LogUtil;
 import com.codingbingo.fastreader.Constants;
 import com.codingbingo.fastreader.FRApplication;
 import com.codingbingo.fastreader.dao.Book;
@@ -318,7 +319,7 @@ public class PageFactory {
                     currentStartPosition += lines.get(0).getBytes(charSet).length; // 5.删减行数同时起始位置指针也要跟着偏移
                     lines.remove(0);
                 } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
+                    LogUtil.log.e("上翻页失败，文本解码失败", e);
                 }
             }
 

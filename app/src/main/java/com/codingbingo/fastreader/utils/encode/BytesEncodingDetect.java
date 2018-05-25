@@ -1,5 +1,7 @@
 package com.codingbingo.fastreader.utils.encode;
 
+import com.avos.avoscloud.LogUtil;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -55,7 +57,7 @@ public class BytesEncodingDetect extends Encoding {
                 try {
                     result = sinodetector.detectEncoding(new URL(argc[i]));
                 } catch (Exception e) {
-                    System.err.println("Bad URL " + e.toString());
+                    LogUtil.log.e("Bad URL ", e.toString());
                 }
             } else if (argc[i].equals("-d")) {
                 sinodetector.debug = true;
@@ -63,7 +65,6 @@ public class BytesEncodingDetect extends Encoding {
             } else {
                 result = sinodetector.detectEncoding(new File(argc[i]));
             }
-            System.out.println(nicename[result]);
         }
     }
 
@@ -86,7 +87,7 @@ public class BytesEncodingDetect extends Encoding {
             chinesestream.close();
             guess = detectEncoding(rawtext);
         } catch (Exception e) {
-            System.err.println("Error loading or using URL " + e.toString());
+            LogUtil.log.e("Error loading or using URL ", e);
             guess = -1;
         }
         return guess;
@@ -106,7 +107,7 @@ public class BytesEncodingDetect extends Encoding {
             chinesefile.read(rawtext);
             chinesefile.close();
         } catch (Exception e) {
-            System.err.println("Error: " + e);
+            LogUtil.log.e("Error: ", e);
         }
         return detectEncoding(rawtext);
     }
@@ -147,7 +148,7 @@ public class BytesEncodingDetect extends Encoding {
         // Tabulate Scores
         for (index = 0; index < TOTALTYPES; index++) {
             if (debug)
-                System.err.println("Encoding " + nicename[index] + " score " + scores[index]);
+                LogUtil.log.e("Encoding " + nicename[index] + " score " + scores[index]);
             if (scores[index] > maxscore) {
                 encoding_guess = index;
                 maxscore = scores[index];

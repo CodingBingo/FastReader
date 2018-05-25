@@ -10,4 +10,10 @@
 
     <string name="chapter_list">章节列表</string>
     <string name="delete">删除</string>
+    <string name="file_encoding">文件解码中...</string>
+    <string name="loading_text">L O A D I N G ...</string>
+    <string name="night_mode">夜间</string>
+    <string name="setting">设置</string>
+    <string name="font_size_plus">A+</string>
+    <string name="font_size_min">A-</string>
 </resources>
