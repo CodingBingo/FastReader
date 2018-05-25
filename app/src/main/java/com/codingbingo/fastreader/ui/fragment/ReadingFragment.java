@@ -102,6 +102,8 @@ public class ReadingFragment extends BaseFragment implements OnControllerStatusC
                 readPageWidget.setBookId(mBook.getId(), false);
             }
         }
+        //设置readingPage到controller管理
+        readController.setReadPageWidget(readPageWidget);
 
         readLoadingView = (CatLoadingView) view.findViewById(R.id.loading);
         if (mBook == null || mBook.getProcessStatus() != Constants.BOOK_PROCESSED) {
@@ -179,11 +181,11 @@ public class ReadingFragment extends BaseFragment implements OnControllerStatusC
 
         switch (bookStatusChangeEvent.getStatus()) {
             case Constants.BOOK_PROCESSED:
-                LogUtil.log.e("*****************************");
-                LogUtil.log.e("Current bookId is: " + bookId);
-                LogUtil.log.e("Current bookPath is: " + bookPath);
-                LogUtil.log.e("Pass bookId is: " + bookStatusChangeEvent.getBookId());
-                LogUtil.log.e("*****************************");
+                LogUtil.log.i("*****************************");
+                LogUtil.log.i("Current bookId is: " + bookId);
+                LogUtil.log.i("Current bookPath is: " + bookPath);
+                LogUtil.log.i("Pass bookId is: " + bookStatusChangeEvent.getBookId());
+                LogUtil.log.i("*****************************");
 
                 readLoadingView.setVisibility(View.GONE);
                 bookId = bookStatusChangeEvent.getBookId();

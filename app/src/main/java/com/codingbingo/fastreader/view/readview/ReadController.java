@@ -95,6 +95,8 @@ public class ReadController extends FrameLayout implements
 
     private int currentFontSize;
 
+    private PageWidget readPageWidget;
+
     public ReadController(Context context) {
         this(context, null, 0);
     }
@@ -116,6 +118,14 @@ public class ReadController extends FrameLayout implements
         initView();
         this.setOnTouchListener(this);
         currentStatus = CONTROLLER_HIDE;
+    }
+
+    /**
+     * 设置pageWidget
+     * @param readPageWidget
+     */
+    public void setReadPageWidget(PageWidget readPageWidget) {
+        this.readPageWidget = readPageWidget;
     }
 
     private void setBrightnessMode(Context context) {
@@ -159,6 +169,33 @@ public class ReadController extends FrameLayout implements
         float y = event.getY();
         int width = v.getWidth();
         int height = v.getHeight();
+
+        judgePageAction: {
+            double width_p1 = width * 0.3;
+            double width_p2 = width * 0.6;
+
+            double height_p1 = height * 0.3;
+            double height_p2 = height * 0.6;
+            if(x < width_p1){
+                //上一页
+                this.readPageWidget.prePage();
+                return false;
+            } else if (x > width_p2){
+                //下一页
+                this.readPageWidget.nextPage();
+                return false;
+            } else {
+                if (y < height_p1){
+                    //上一页
+                    this.readPageWidget.prePage();
+                    return false;
+                } else if(y > height_p2){
+                    //下一页
+                    this.readPageWidget.nextPage();
+                    return false;
+                }
+            }
+        }
 
         if (currentStatus == CONTROLLER_SHOW) {
             hideController();
