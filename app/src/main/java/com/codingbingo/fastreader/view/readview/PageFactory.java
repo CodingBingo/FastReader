@@ -532,6 +532,8 @@ public class PageFactory {
     public void processChapters(int startPosition) {
         int currentPosition = startPosition;
         int lastPosition = 0;
+        //当前时间
+        Long lastUpdateTime = null;
 
         Pattern pattern = Pattern.compile("第.{1,7}章.*\r\n");
 
@@ -567,11 +569,16 @@ public class PageFactory {
 
             currentPosition += bytes.length;
 
-            BookStatusChangeEvent bookStatusChangeEvent = new BookStatusChangeEvent();
-            bookStatusChangeEvent.setProgress((int)(currentPosition * 100.0 / mByteBufferLength));
-            bookStatusChangeEvent.setStatus(Constants.BOOK_PROCESSING);
-            bookStatusChangeEvent.setBookId(mBook.getId());
-            EventBus.getDefault().post(bookStatusChangeEvent);
+            long currentTime = System.currentTimeMillis();
+            //防止因为太快，导致卡顿
+            if (lastUpdateTime == null || currentTime - lastUpdateTime >= 1000){
+                lastUpdateTime = currentTime;
+                BookStatusChangeEvent bookStatusChangeEvent = new BookStatusChangeEvent();
+                bookStatusChangeEvent.setProgress((int)(currentPosition * 100.0 / mByteBufferLength));
+                bookStatusChangeEvent.setStatus(Constants.BOOK_PROCESSING);
+                bookStatusChangeEvent.setBookId(mBook.getId());
+                EventBus.getDefault().post(bookStatusChangeEvent);
+            }
         }
     }
 

@@ -44,7 +44,7 @@ dependencies {
     // 推送与实时聊天需要的包
     compile('cn.leancloud.android:avoscloud-push:v3.+@aar') { transitive = true }
 
-    compile 'org.greenrobot:eventbus:3.0.0'
+    compile 'org.greenrobot:eventbus:3.1.1'
     //发布到线上的时候删除
     compile 'com.facebook.stetho:stetho:1.4.2'
 }
