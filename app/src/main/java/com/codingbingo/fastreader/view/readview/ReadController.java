@@ -181,19 +181,41 @@ public class ReadController extends FrameLayout implements
             double height_p2 = height * 0.7;
             if(x < width_p1){
                 //上一页
+                    //close control bar if it was opened when trying to change page
+                   if (currentStatus == CONTROLLER_SHOW) {
+                    hideController();
+                    currentStatus = CONTROLLER_HIDE;
+                  }
                 this.readPageWidget.prePage();
                 return false;
             } else if (x > width_p2){
                 //下一页
+                      //close control bar if it was opened when trying to change page
+                   if (currentStatus == CONTROLLER_SHOW) {
+                    hideController();
+                    currentStatus = CONTROLLER_HIDE;
+                  }
                 this.readPageWidget.nextPage();
                 return false;
             } else {
                 if (y < height_p1){
                     //上一页
+                        
+                          //close control bar if it was opened when trying to change page
+                   if (currentStatus == CONTROLLER_SHOW) {
+                    hideController();
+                    currentStatus = CONTROLLER_HIDE;
+                  }
                     this.readPageWidget.prePage();
                     return false;
                 } else if(y > height_p2){
                     //下一页
+                        
+                          //close control bar if it was opened when trying to change page
+                   if (currentStatus == CONTROLLER_SHOW) {
+                    hideController();
+                    currentStatus = CONTROLLER_HIDE;
+                  }
                     this.readPageWidget.nextPage();
                     return false;
                 }
